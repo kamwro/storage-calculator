@@ -1,17 +1,10 @@
-import { IsString, IsNumber, Min, IsArray, ValidateNested } from 'class-validator';
+import { IsString, IsNumber, Min, IsArray, ValidateNested, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ProjectItemDto } from './container.shared.dto';
 
-class ProjectItemDto {
-  @IsNumber()
-  itemTypeId: number;
-
-  @IsNumber()
-  @Min(0)
-  quantity: number;
-}
-
-export class CreateProjectDto {
+export class CreateContainerDto {
   @IsString()
+  @IsNotEmpty()
   name: string;
 
   @IsNumber()

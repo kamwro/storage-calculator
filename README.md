@@ -4,31 +4,39 @@ WIP
 
 A simple monorepo project built with pnpm, containing:
 
--   Backend: NestJS
--   Frontend: React + Vite
--   Global formatting: Prettier
--   Local linting: ESLint (separate configs for backend & frontend)
--   Dependency checks: npm‑check‑updates
--   Git hooks: Husky (pre-commit formatting, pre-push checks)
+- Backend: NestJS
+- Frontend: React + Vite
+- Global formatting: Prettier
+- Local linting: ESLint (separate configs for backend & frontend)
+- Dependency checks: npm‑check‑updates
+- Git hooks: Husky (pre-commit formatting, pre-push checks)
 
 Project Structure
 
     storage-calculator/
     │
-    ├─ backend/        # NestJS API
+    ├─ backend/                 # NestJS API
+    │  ├─ src/
+    │  ├─ infra/
+    │  │   ├─ postgres/
+    │  │   │    ├─ entities/
+    │  │   │    ├─ migrations/
+    │  │   │    └─ data-source.ts
+    │  │   └─ docker/
+    │  │        └─ Dockerfile
+    │  ├─ tsconfig.json
+    │  ├─ eslint.config.mjs
+    │  └─ package.json
+    │
+    ├─ frontend/                # React + Vite app
     │  ├─ src/
     │  ├─ tsconfig.json
     │  ├─ eslint.config.mjs
     │  └─ package.json
     │
-    ├─ frontend/       # React + Vite app
-    │  ├─ src/
-    │  ├─ tsconfig.json
-    │  ├─ eslint.config.mjs
-    │  └─ package.json
-    │
+    ├─ docker-compose.yml       # Backend + PostgreSQL services
     ├─ pnpm-workspace.yaml
-    ├─ package.json     # root scripts (dev, format, deps)
+    ├─ package.json             # Root scripts
     ├─ .prettierrc
     └─ .husky/
 
@@ -67,13 +75,13 @@ Update minor dependencies:
 
 Git Hooks (Husky)
 
--   pre-commit → format with Prettier
--   pre-push → lint backend, lint frontend, check dependencies
+- pre-commit → format with Prettier
+- pre-push → lint backend, lint frontend, check dependencies
 
 Requirements
 
--   Node: 24.11.1+
--   pnpm: 10.24.0
+- Node: 24.11.1+
+- pnpm: 10.24.0
 
 License
 

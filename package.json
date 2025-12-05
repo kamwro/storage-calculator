@@ -6,7 +6,8 @@
     "node": "^24.11.1"
   },
   "scripts": {
-    "dev:backend": "pnpm --filter backend start:dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "build:backend": "pnpm --filter backend build",
     "dev:frontend": "pnpm --filter frontend dev",
     "format": "prettier \"**/*.{ts,tsx,js,jsx,json,md,css,html}\" --write",
     "deps:check:major": "ncu --target latest",
@@ -16,6 +17,6 @@
   "devDependencies": {
     "husky": "^9.1.7",
     "npm-check-updates": "^19.1.2",
-    "prettier": "^3.7.3"
+    "prettier": "^3.7.4"
   }
 }

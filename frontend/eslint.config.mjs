@@ -4,6 +4,8 @@ import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import prettierPlugin from 'eslint-plugin-prettier';
 import globals from 'globals';
+import unusedImports from "eslint-plugin-unused-imports";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
@@ -27,7 +29,9 @@ export default [
       '@typescript-eslint': tsPlugin,
       react: reactPlugin,
       'react-hooks': reactHooksPlugin,
-      prettier: prettierPlugin
+      prettier: prettierPlugin,
+      "unused-imports": unusedImports,
+      "simple-import-sort": simpleImportSort,
     },
     settings: {
       react: {
@@ -38,7 +42,10 @@ export default [
       ...tsPlugin.configs.recommended.rules,
       ...reactPlugin.configs.recommended.rules,
       ...reactHooksPlugin.configs.recommended.rules,
-      'prettier/prettier': 'error'
+      'prettier/prettier': 'error',
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
+      "unused-imports/no-unused-imports": "error",
     }
   }
 ];

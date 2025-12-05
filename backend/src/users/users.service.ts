@@ -1,24 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import { User } from './user.entity';
+import { UserEntity } from '../infra/postgres/entities/user.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [];
-  private nextId = 1;
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly repo: Repository<UserEntity>,
+  ) {}
 
-  create(username: string, password: string): User {
-    const user: User = { id: this.nextId++, username, password };
-    this.users.push(user);
-    return user;
+  async create(name: string, password: string): Promise<UserEntity> {
+    const user = this.repo.create({ name, password });
+    return await this.repo.save(user);
   }
 
-  findByUsername(username: string): User | undefined {
-    return this.users.find((u) => u.username === username);
+  async findById(id: string): Promise<UserEntity | null> {
+    return await this.repo.findOne({ where: { id } });
   }
 
-  validateUser(username: string, password: string): User | null {
-    const user = this.findByUsername(username);
-    if (!user || user.password !== password) return null;
-    return user;
+  async findByName(name: string): Promise<UserEntity | null> {
+    return await this.repo.findOne({ where: { name } });
+  }
+
+  async validateUser(id: string, password: string): Promise<UserEntity | null> {
+    const existing = await this.findById(id);
+    if (!existing || existing.password !== password) {
+      return null;
+    }
+    return existing;
   }
 }

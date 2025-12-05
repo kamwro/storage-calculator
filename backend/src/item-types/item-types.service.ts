@@ -1,27 +1,27 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ItemType } from './item-type.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateItemTypeDto } from './dto/create-item-type.dto';
+import { ItemTypeEntity } from '../infra/postgres/entities/item-type.entity';
 
 @Injectable()
 export class ItemTypesService {
-  private itemTypes: ItemType[] = [];
-  private nextId = 1;
+  constructor(
+    @InjectRepository(ItemTypeEntity)
+    private readonly repo: Repository<ItemTypeEntity>,
+  ) {}
 
-  findAll(): ItemType[] {
-    return this.itemTypes;
+  findAll(): Promise<ItemTypeEntity[]> {
+    return this.repo.find();
   }
 
-  create(dto: CreateItemTypeDto): ItemType {
-    const item: ItemType = {
-      id: this.nextId++,
-      ...dto,
-    };
-    this.itemTypes.push(item);
-    return item;
+  async create(dto: CreateItemTypeDto): Promise<ItemTypeEntity> {
+    const item = this.repo.create(dto);
+    return this.repo.save(item);
   }
 
-  findById(id: number): ItemType {
-    const item = this.itemTypes.find((i) => i.id === id);
+  async findById(id: string): Promise<ItemTypeEntity> {
+    const item = await this.repo.findOne({ where: { id } });
     if (!item) throw new NotFoundException('Item type not found');
     return item;
   }

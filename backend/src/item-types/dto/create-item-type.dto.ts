@@ -1,7 +1,7 @@
-import { IsString, IsNumber, Min } from 'class-validator';
+import { IsNumber, Min, IsUUID } from 'class-validator';
 
 export class CreateItemTypeDto {
-  @IsString()
+  @IsUUID()
   name: string;
 
   @IsNumber()

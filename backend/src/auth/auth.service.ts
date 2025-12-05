@@ -11,23 +11,23 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  register(dto: RegisterDto) {
-    const existing = this.usersService.findByUsername(dto.username);
+  async register(dto: RegisterDto) {
+    const existing = await this.usersService.findByName(dto.username);
     if (existing) {
       throw new ConflictException('Username already exists');
     }
-    const user = this.usersService.create(dto.username, dto.password);
-    const payload = { sub: user.id, username: user.username };
+    const user = await this.usersService.create(dto.username, dto.password);
+    const payload = { sub: user.id, username: user.name };
     const token = this.jwtService.sign(payload);
     return { token, user };
   }
 
-  login(dto: LoginDto) {
-    const user = this.usersService.validateUser(dto.username, dto.password);
+  async login(dto: LoginDto) {
+    const user = await this.usersService.validateUser(dto.username, dto.password);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const payload = { sub: user.id, username: user.username };
+    const payload = { sub: user.id, username: user.name };
     const token = this.jwtService.sign(payload);
     return { token, user };
   }
