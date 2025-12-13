@@ -35,9 +35,30 @@ async function seed() {
   await usersRepo.save(demo);
 
   // Item types
-  const small = itemTypesRepo.create({ name: 'Small Box', unitWeightKg: 1, unitVolumeM3: 0.02, lengthM: 0.4, widthM: 0.3, heightM: 0.2 });
-  const medium = itemTypesRepo.create({ name: 'Medium Box', unitWeightKg: 2, unitVolumeM3: 0.05, lengthM: 0.6, widthM: 0.4, heightM: 0.25 });
-  const large = itemTypesRepo.create({ name: 'Large Box', unitWeightKg: 5, unitVolumeM3: 0.1, lengthM: 0.8, widthM: 0.6, heightM: 0.25 });
+  const small = itemTypesRepo.create({
+    name: 'Small Box',
+    unitWeightKg: 1,
+    unitVolumeM3: 0.02,
+    lengthM: 0.4,
+    widthM: 0.3,
+    heightM: 0.2,
+  });
+  const medium = itemTypesRepo.create({
+    name: 'Medium Box',
+    unitWeightKg: 2,
+    unitVolumeM3: 0.05,
+    lengthM: 0.6,
+    widthM: 0.4,
+    heightM: 0.25,
+  });
+  const large = itemTypesRepo.create({
+    name: 'Large Box',
+    unitWeightKg: 5,
+    unitVolumeM3: 0.1,
+    lengthM: 0.8,
+    widthM: 0.6,
+    heightM: 0.25,
+  });
   await itemTypesRepo.save([small, medium, large]);
 
   // Containers (owned by demo)

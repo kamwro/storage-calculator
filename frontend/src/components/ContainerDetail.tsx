@@ -5,10 +5,24 @@ type ItemType = { id: string; name: string; unitWeightKg: number; unitVolumeM3: 
 type Item = { id: string; quantity: number; note?: string | null; itemType: ItemType };
 
 const SummaryRow = ({ label, value, unit }: { label: string; value: number; unit?: string }) => (
-  <div className="flex justify-between text-sm"><span className="text-gray-600">{label}</span><span>{value.toFixed(3)}{unit ? ` ${unit}` : ''}</span></div>
+  <div className="flex justify-between text-sm">
+    <span className="text-gray-600">{label}</span>
+    <span>
+      {value.toFixed(3)}
+      {unit ? ` ${unit}` : ''}
+    </span>
+  </div>
 );
 
-export default function ContainerDetail({ id, itemTypes, onChanged }: { id: string; itemTypes: ItemType[]; onChanged?: () => void }) {
+export default function ContainerDetail({
+  id,
+  itemTypes,
+  onChanged,
+}: {
+  id: string;
+  itemTypes: ItemType[];
+  onChanged?: () => void;
+}) {
   const [items, setItems] = useState<Item[]>([]);
   const [summary, setSummary] = useState<{
     containerId: string;
@@ -20,7 +34,10 @@ export default function ContainerDetail({ id, itemTypes, onChanged }: { id: stri
     weightExceeded: boolean;
     volumeExceeded: boolean;
   } | null>(null);
-  const [form, setForm] = useState<{ itemTypeId: string; quantity: number; note?: string }>({ itemTypeId: '', quantity: 1 });
+  const [form, setForm] = useState<{ itemTypeId: string; quantity: number; note?: string }>({
+    itemTypeId: '',
+    quantity: 1,
+  });
   const [error, setError] = useState<string | null>(null);
 
   const typesMap = useMemo(() => new Map(itemTypes.map((t) => [t.id, t])), [itemTypes]);
@@ -79,7 +96,7 @@ export default function ContainerDetail({ id, itemTypes, onChanged }: { id: stri
               <th className="text-right p-2">Unit W (kg)</th>
               <th className="text-right p-2">Unit V (m³)</th>
               <th className="p-2">Note</th>
-              <th className="p-2"/>
+              <th className="p-2" />
             </tr>
           </thead>
           <tbody>
@@ -98,13 +115,17 @@ export default function ContainerDetail({ id, itemTypes, onChanged }: { id: stri
                 <td className="p-2 text-right">{it.itemType.unitVolumeM3}</td>
                 <td className="p-2 text-xs text-gray-600">{it.note ?? ''}</td>
                 <td className="p-2 text-right">
-                  <button className="text-red-600 hover:underline" onClick={() => remove(it.id)}>Delete</button>
+                  <button className="text-red-600 hover:underline" onClick={() => remove(it.id)}>
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
             {items.length === 0 && (
               <tr>
-                <td className="p-2 text-sm text-gray-500" colSpan={6}>No items yet.</td>
+                <td className="p-2 text-sm text-gray-500" colSpan={6}>
+                  No items yet.
+                </td>
               </tr>
             )}
           </tbody>
@@ -121,7 +142,9 @@ export default function ContainerDetail({ id, itemTypes, onChanged }: { id: stri
           >
             <option value="">Select…</option>
             {itemTypes.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
             ))}
           </select>
         </div>
@@ -144,7 +167,9 @@ export default function ContainerDetail({ id, itemTypes, onChanged }: { id: stri
             onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
           />
         </div>
-        <button type="submit" className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">Add Item</button>
+        <button type="submit" className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">
+          Add Item
+        </button>
         {error && <span className="text-red-600 text-sm">{error}</span>}
       </form>
 

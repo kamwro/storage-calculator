@@ -12,9 +12,11 @@ I add `role: 'admin' | 'user'` to `User`. Admin can access and mutate everything
 I implement a `@Roles(...)` decorator and a `RolesGuard` layered on top of `JwtAuthGuard`. I enforce ownership in service queries (filter by `ownerId`) and, where needed, in guards.
 
 Why
+
 - The pattern is familiar to reviewers and easy to audit.
 - It scales if I later add organizations or projects.
 
 Consequences
+
 - I extend entities to carry ownership (e.g., `ContainerEntity.ownerId`) and update queries accordingly.
 - Tests and seed data need to set explicit owners.

@@ -1,22 +1,54 @@
+Project Overview
 
-- pre-commit → format with Prettier
-- pre-push → lint backend, lint frontend, check dependencies
+This is a small monorepo that helps plan how items fit into storage containers under both weight and volume constraints. It exposes a simple REST API for auth, CRUD over entities, and a calculator that tries to allocate items to containers using pluggable strategies. A lightweight React frontend drives the APIs, and an optional Python GraphQL service can normalize external data before it’s pushed into the system.
+
+Monorepo layout
+
+- Backend (NestJS + TypeORM + Postgres): `backend/`
+  - Auth (JWT), Users, Item Types, Containers, Items
+  - Calculator endpoint implementing `first_fit`, `best_fit`, and `single_container_only`
+  - DB migrations + seed script
+- Frontend (React + Vite + Tailwind): `frontend/`
+  - Screens for auth, item types, containers + items, and the calculator
+- Python Cargo Processor (FastAPI + Strawberry GraphQL): `python/`
+  - Optional service to ingest/normalize raw data into item types and items
+
+How pieces fit together
+
+- The frontend talks to the backend at `/api`.
+- The backend persists data in Postgres and exposes calculator logic.
+- Tools or backend (future) can call the Python service to normalize incoming data, then create item types/items via the backend API.
+
+Quickstart (dev)
+
+1) Install prerequisites: Node 24.x, pnpm, Docker (for Postgres), Python 3.11+ (optional for the Python service).
+2) Install deps: `pnpm install`
+3) Backend env: copy `backend/.env.example` → `backend/.env` and set DB_*, JWT_SECRET
+4) Start services:
+   - Backend: `pnpm --filter backend dev`
+   - Frontend: `pnpm --filter frontend dev`
+5) Database:
+   - Run migrations: `pnpm --filter backend run migration:run`
+   - Seed demo data: `pnpm --filter backend run seed` (or use `scripts/seed.py`)
 
 API Overview
 
 Base URL: `/api`
 
 Auth
+
 - POST `/auth/register` → `{ email, password }`
 - POST `/auth/login` → `{ email, password }` → `{ accessToken }`
 - GET `/auth/me` (JWT) → current user
 
 Item Types
+
 - GET `/item-types`
 - POST `/item-types` (admin)
   - `{ name, unitWeightKg, unitVolumeM3, lengthM?, widthM?, heightM? }`
 
 Containers
+
 - GET `/containers`
 - GET `/containers/:id`
 - POST `/containers` → `{ name, maxWeightKg, maxVolumeM3 }`
@@ -25,12 +57,14 @@ Containers
 - GET `/containers/:id/summary` → totals and utilization
 
 Items
+
 - GET `/containers/:containerId/items`
 - POST `/containers/:containerId/items` → `{ itemTypeId, quantity, note? }`
 - PATCH `/items/:id`
 - DELETE `/items/:id`
 
 Calculator
+
 - POST `/calculator/evaluate`
 
 Request:
@@ -100,6 +134,7 @@ pnpm --filter backend run seed
 ```
 
 Seed content:
+
 - Users: admin (`admin@example.com`) and demo (`demo@example.com`)
 - Item types: Small/Medium/Large Box with `unitWeightKg`, `unitVolumeM3`, and dimensions
 - Containers: A/B with `maxWeightKg`, `maxVolumeM3`
@@ -119,6 +154,7 @@ python ./scripts/seed.py
 ```
 
 Environment variables (with defaults):
+
 - `BACKEND_URL` (default `http://localhost:3000/api`)
 - `SEED_USERNAME` (default `admin@example.com`)
 - `SEED_PASSWORD` (default `admin1234`)
@@ -126,6 +162,7 @@ Environment variables (with defaults):
 Frontend (React + Vite)
 
 Pages/components (planned):
+
 - Auth (login/register)
 - Item Types manager: list/create/update/delete (admin for mutating ops)
 - Containers: list/detail; detail shows Items table + summary card (weight/volume/utilization)
@@ -147,6 +184,7 @@ type Mutation { normalize(source: String!, payload: JSON!): NormalizeResult! }
 ```
 
 Where to find it:
+
 - App: `python/main.py` (FastAPI + Strawberry GraphQL)
 - Env sample: `python/.env.sample` (set `X_CARGO_PROCESSOR_API_KEY`)
 - Dockerfile: `python/Dockerfile`
@@ -191,14 +229,17 @@ docker compose up --build
 ```
 
 Defaults used by the backend container (set via compose):
+
 - DB_HOST=db, DB_PORT=5432
 - DB_USER, DB_PASS, DB_NAME (from `backend/.env`)
 
 Once services are up:
+
 - Run migrations (inside your dev shell): `pnpm --filter backend run migration:run`
 - Seed data: `pnpm --filter backend run seed` or `./scripts/seed.sh`
 
 Cargo Processor service:
+
 - Exposed at `http://localhost:8000/graphql`
 - Env: `X_CARGO_PROCESSOR_API_KEY` (defaults to `dev-key` via compose)
 

@@ -41,9 +41,12 @@ export class CalculatorService {
     }));
 
     // Clone items demand
-    const remaining: AllocationItem[] = input.items.map((i) => ({ itemTypeId: i.itemTypeId, quantity: Math.floor(i.quantity) }));
+    const remaining: AllocationItem[] = input.items.map((i) => ({
+      itemTypeId: i.itemTypeId,
+      quantity: Math.floor(i.quantity),
+    }));
 
-    const placeUnit = (typeId: string, s: typeof state[number]) => {
+    const placeUnit = (typeId: string, s: (typeof state)[number]) => {
       const t = typeMap.get(typeId)!;
       const newW = s.usedW + t.unitWeightKg;
       const newV = s.usedV + t.unitVolumeM3;
@@ -55,7 +58,7 @@ export class CalculatorService {
     };
 
     // Helper to check if placing a unit would fit (without mutating state)
-    const placeUnitTry = (s: typeof state[number], typeId: string) => {
+    const placeUnitTry = (s: (typeof state)[number], typeId: string) => {
       const t = typeMap.get(typeId)!;
       return s.usedW + t.unitWeightKg <= s.container.maxWeightKg && s.usedV + t.unitVolumeM3 <= s.container.maxVolumeM3;
     };
@@ -64,7 +67,7 @@ export class CalculatorService {
 
     const pickContainerBestFit = (typeId: string) => {
       const t = typeMap.get(typeId)!;
-      let best: typeof state[number] | undefined;
+      let best: (typeof state)[number] | undefined;
       let bestScore = Number.POSITIVE_INFINITY;
       for (const s of state) {
         const newW = s.usedW + t.unitWeightKg;
@@ -117,9 +120,8 @@ export class CalculatorService {
       let q = dem.quantity;
       if (q <= 0) continue;
       while (q > 0) {
-        const pick = input.strategy === 'first_fit'
-          ? pickContainerFirstFit(dem.itemTypeId)
-          : pickContainerBestFit(dem.itemTypeId);
+        const pick =
+          input.strategy === 'first_fit' ? pickContainerFirstFit(dem.itemTypeId) : pickContainerBestFit(dem.itemTypeId);
         if (!pick) break; // cannot place more units of this type
         // place one unit
         placeUnit(dem.itemTypeId, pick);

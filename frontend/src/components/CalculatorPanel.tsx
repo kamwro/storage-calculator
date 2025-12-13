@@ -48,14 +48,16 @@ const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold">Items</h3>
-          <button className="px-2 py-1 rounded bg-green-600 text-white hover:bg-green-700" onClick={addRow}>Add</button>
+          <button className="px-2 py-1 rounded bg-green-600 text-white hover:bg-green-700" onClick={addRow}>
+            Add
+          </button>
         </div>
         <table className="w-full text-sm border">
           <thead className="bg-gray-50">
             <tr>
               <th className="text-left p-2">Item Type</th>
               <th className="text-right p-2">Qty</th>
-              <th className="p-2"/>
+              <th className="p-2" />
             </tr>
           </thead>
           <tbody>
@@ -65,11 +67,15 @@ const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
                   <select
                     className="border rounded px-2 py-1 min-w-40"
                     value={row.itemTypeId}
-                    onChange={(e) => setItems((arr) => arr.map((r, i) => (i === idx ? { ...r, itemTypeId: e.target.value } : r)))}
+                    onChange={(e) =>
+                      setItems((arr) => arr.map((r, i) => (i === idx ? { ...r, itemTypeId: e.target.value } : r)))
+                    }
                   >
                     <option value="">Select…</option>
                     {itemTypes.map((t) => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
                     ))}
                   </select>
                 </td>
@@ -79,17 +85,23 @@ const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
                     type="number"
                     min={0}
                     value={row.quantity}
-                    onChange={(e) => setItems((arr) => arr.map((r, i) => (i === idx ? { ...r, quantity: Number(e.target.value) } : r)))}
+                    onChange={(e) =>
+                      setItems((arr) => arr.map((r, i) => (i === idx ? { ...r, quantity: Number(e.target.value) } : r)))
+                    }
                   />
                 </td>
                 <td className="p-2 text-right">
-                  <button className="text-red-600 hover:underline" onClick={() => removeRow(idx)}>Remove</button>
+                  <button className="text-red-600 hover:underline" onClick={() => removeRow(idx)}>
+                    Remove
+                  </button>
                 </td>
               </tr>
             ))}
             {items.length === 0 && (
               <tr>
-                <td className="p-2 text-sm text-gray-500" colSpan={3}>Add some items to evaluate.</td>
+                <td className="p-2 text-sm text-gray-500" colSpan={3}>
+                  Add some items to evaluate.
+                </td>
               </tr>
             )}
           </tbody>
@@ -100,7 +112,10 @@ const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
         <h3 className="font-semibold">Target Containers</h3>
         <div className="flex flex-wrap gap-2">
           {containers.map((c) => (
-            <label key={c.id} className={`px-2 py-1 border rounded cursor-pointer ${selectedContainers.includes(c.id) ? 'bg-blue-50 border-blue-400' : ''}`}>
+            <label
+              key={c.id}
+              className={`px-2 py-1 border rounded cursor-pointer ${selectedContainers.includes(c.id) ? 'bg-blue-50 border-blue-400' : ''}`}
+            >
               <input
                 type="checkbox"
                 className="mr-1 align-middle"
@@ -137,9 +152,16 @@ const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
           <div className="space-y-3">
             {result.byContainer.map((bc: any) => (
               <div key={bc.containerId} className="border rounded p-2 text-sm">
-                <div>Total Weight: {bc.totalWeightKg.toFixed(3)} kg; Total Volume: {bc.totalVolumeM3.toFixed(3)} m³</div>
-                <div>Utilization — W: {(bc.utilization.weightPct * 100).toFixed(1)}%, V: {(bc.utilization.volumePct * 100).toFixed(1)}%</div>
-                <div className="mt-1">Items: {bc.items.map((it: any) => `${it.itemTypeId.slice(0, 8)}…×${it.quantity}`).join(', ') || '—'}</div>
+                <div>
+                  Total Weight: {bc.totalWeightKg.toFixed(3)} kg; Total Volume: {bc.totalVolumeM3.toFixed(3)} m³
+                </div>
+                <div>
+                  Utilization — W: {(bc.utilization.weightPct * 100).toFixed(1)}%, V:{' '}
+                  {(bc.utilization.volumePct * 100).toFixed(1)}%
+                </div>
+                <div className="mt-1">
+                  Items: {bc.items.map((it: any) => `${it.itemTypeId.slice(0, 8)}…×${it.quantity}`).join(', ') || '—'}
+                </div>
               </div>
             ))}
           </div>

@@ -27,11 +27,7 @@ export class ContainersController {
   }
 
   @Patch(':id')
-  async update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: UpdateContainerDto,
-    @Req() req: AuthenticatedRequest,
-  ) {
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateContainerDto, @Req() req: AuthenticatedRequest) {
     return await this.containersService.update(id, dto, req.user);
   }
 

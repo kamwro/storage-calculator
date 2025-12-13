@@ -19,7 +19,8 @@ const App = () => {
     if (t) {
       setToken(t);
       setAuth(true);
-      api.get('/auth/me')
+      api
+        .get('/auth/me')
         .then((res) => setUser(res.data))
         .catch(() => setUser(null));
       api.get('/item-types').then((res) => setItemTypes(res.data));
@@ -62,10 +63,13 @@ const App = () => {
       <section className="grid md:grid-cols-2 gap-6">
         <div className="border rounded p-4">
           <h2 className="text-lg font-semibold mb-3">Item Types</h2>
-          <ItemTypesManager canCreate={user?.role === 'admin'} onCreated={async () => {
-            const res = await api.get('/item-types');
-            setItemTypes(res.data);
-          }} />
+          <ItemTypesManager
+            canCreate={user?.role === 'admin'}
+            onCreated={async () => {
+              const res = await api.get('/item-types');
+              setItemTypes(res.data);
+            }}
+          />
         </div>
         <div className="border rounded p-4">
           <h2 className="text-lg font-semibold mb-3">Containers</h2>

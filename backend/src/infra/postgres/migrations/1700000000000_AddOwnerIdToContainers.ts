@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class AddOwnerIdToContainers1700000000000 implements MigrationInterface {
-  name = 'AddOwnerIdToContainers1700000000000'
+  name = 'AddOwnerIdToContainers1700000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Try common table names, since ContainerEntity didn't specify an explicit name earlier.

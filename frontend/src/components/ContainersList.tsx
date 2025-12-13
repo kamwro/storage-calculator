@@ -38,13 +38,12 @@ const ContainersList: React.FC<Props> = ({ containers, onSelect, onCreated }) =>
       <ul className="divide-y">
         {containers.map((c) => (
           <li key={c.id} className="py-2 flex items-center justify-between text-sm">
-            <button
-              className="text-left hover:underline"
-              onClick={() => onSelect(c.id)}
-              title="Select container"
-            >
+            <button className="text-left hover:underline" onClick={() => onSelect(c.id)} title="Select container">
               <span className="font-medium">{c.name}</span>
-              <span className="text-gray-600"> — W:{c.maxWeightKg}kg · V:{c.maxVolumeM3}m³</span>
+              <span className="text-gray-600">
+                {' '}
+                — W:{c.maxWeightKg}kg · V:{c.maxVolumeM3}m³
+              </span>
             </button>
           </li>
         ))}
@@ -54,7 +53,12 @@ const ContainersList: React.FC<Props> = ({ containers, onSelect, onCreated }) =>
       <form onSubmit={create} className="flex flex-wrap gap-2 items-end">
         <div className="flex flex-col">
           <label className="text-xs text-gray-600">Name</label>
-          <input className="border rounded px-2 py-1" placeholder="Container A" value={name} onChange={(e) => setName(e.target.value)} />
+          <input
+            className="border rounded px-2 py-1"
+            placeholder="Container A"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
         </div>
         <div className="flex flex-col">
           <label className="text-xs text-gray-600">Max Weight (kg)</label>
@@ -76,7 +80,9 @@ const ContainersList: React.FC<Props> = ({ containers, onSelect, onCreated }) =>
             onChange={(e) => setMaxVolumeM3(e.target.value === '' ? '' : Number(e.target.value))}
           />
         </div>
-        <button type="submit" className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700">Create</button>
+        <button type="submit" className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700">
+          Create
+        </button>
         {err && <span className="text-red-600 text-sm">{err}</span>}
       </form>
     </div>
