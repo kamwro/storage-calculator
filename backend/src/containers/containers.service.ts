@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ContainerEntity } from '../infra/postgres/entities/container.entity';
 import { CreateContainerDto } from './dto/create-container.dto';
 import { UpdateContainerDto } from './dto/update-container.dto';
 import { ItemEntity } from '../infra/postgres/entities/item.entity';
+import type { AuthenticatedRequest } from '../shared/auth/types';
+type AuthUser = AuthenticatedRequest['user'];
 
 @Injectable()
 export class ContainersService {
@@ -15,35 +17,40 @@ export class ContainersService {
     private readonly itemsRepo: Repository<ItemEntity>,
   ) {}
 
-  findAll(): Promise<ContainerEntity[]> {
-    return this.containersRepo.find();
+  findAll(user: AuthUser): Promise<ContainerEntity[]> {
+    if (user.role === 'admin') return this.containersRepo.find();
+    return this.containersRepo.find({ where: { ownerId: user.id } as any });
   }
 
-  async findOne(id: string): Promise<ContainerEntity> {
+  async findOne(id: string, user?: AuthUser): Promise<ContainerEntity> {
     const container = await this.containersRepo.findOne({ where: { id } });
     if (!container) {
       throw new NotFoundException('Container not found');
     }
+    if (user && user.role !== 'admin' && container.ownerId !== user.id) {
+      throw new ForbiddenException('Not your container');
+    }
     return container;
   }
 
-  async create(dto: CreateContainerDto): Promise<ContainerEntity> {
-    const container = this.containersRepo.create(dto);
+  async create(dto: CreateContainerDto, user: AuthUser): Promise<ContainerEntity> {
+    const container = this.containersRepo.create({ ...dto, ownerId: user.id });
     return this.containersRepo.save(container);
   }
 
-  async update(id: string, dto: UpdateContainerDto): Promise<ContainerEntity> {
-    const container = await this.findOne(id);
+  async update(id: string, dto: UpdateContainerDto, user: AuthUser): Promise<ContainerEntity> {
+    const container = await this.findOne(id, user);
     Object.assign(container, dto);
     return this.containersRepo.save(container);
   }
 
-  async remove(id: string): Promise<void> {
-    await this.containersRepo.delete(id);
+  async remove(id: string, user: AuthUser): Promise<void> {
+    const container = await this.findOne(id, user);
+    await this.containersRepo.delete(container.id);
   }
 
-  async calculate(id: string) {
-    const container = await this.findOne(id);
+  async calculate(id: string, user: AuthUser) {
+    const container = await this.findOne(id, user);
 
     const items = await this.itemsRepo.find({ where: { container: { id } as any } });
 

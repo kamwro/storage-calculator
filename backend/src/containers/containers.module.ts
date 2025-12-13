@@ -6,10 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ContainerEntity } from '../infra/postgres/entities/container.entity';
 import { ItemEntity } from '../infra/postgres/entities/item.entity';
 import { ItemTypeEntity } from '../infra/postgres/entities/item-type.entity';
+import { RolesGuard } from '../auth/roles.guard';
 
 @Module({
   imports: [ItemTypesModule, TypeOrmModule.forFeature([ContainerEntity, ItemEntity, ItemTypeEntity])],
-  providers: [ContainersService],
+  providers: [ContainersService, RolesGuard],
   controllers: [ContainersController],
 })
 export class ContainersModule {}

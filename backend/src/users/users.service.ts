@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UserEntity } from '../infra/postgres/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -10,8 +11,9 @@ export class UsersService {
     private readonly repo: Repository<UserEntity>,
   ) {}
 
-  async create(name: string, password: string): Promise<UserEntity> {
-    const user = this.repo.create({ name, password });
+  async create(name: string, password: string, role: 'admin' | 'user' = 'user'): Promise<UserEntity> {
+    const hash = await bcrypt.hash(password, 10);
+    const user = this.repo.create({ name, password: hash, role });
     return await this.repo.save(user);
   }
 
@@ -23,11 +25,10 @@ export class UsersService {
     return await this.repo.findOne({ where: { name } });
   }
 
-  async validateUser(id: string, password: string): Promise<UserEntity | null> {
-    const existing = await this.findById(id);
-    if (!existing || existing.password !== password) {
-      return null;
-    }
-    return existing;
+  async validateUserByName(name: string, password: string): Promise<UserEntity | null> {
+    const existing = await this.findByName(name);
+    if (!existing) return null;
+    const ok = await bcrypt.compare(password, existing.password);
+    return ok ? existing : null;
   }
 }

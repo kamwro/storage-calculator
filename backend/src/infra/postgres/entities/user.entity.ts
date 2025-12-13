@@ -5,9 +5,12 @@ export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   @Column()
   password: string;
+
+  @Column({ type: 'varchar', default: 'user' })
+  role: 'admin' | 'user';
 }

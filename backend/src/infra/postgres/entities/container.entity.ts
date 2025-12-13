@@ -13,4 +13,8 @@ export class ContainerEntity {
 
   @Column('float')
   maxVolumeM3: number;
+
+  // Owner scoping (RBAC)
+  @Column('uuid')
+  ownerId: string;
 }

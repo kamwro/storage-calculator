@@ -16,23 +16,23 @@ export class AuthService {
     if (existing) {
       throw new ConflictException('Username already exists');
     }
-    const user = await this.usersService.create(dto.username, dto.password);
-    const payload = { sub: user.id, username: user.name };
+    const user = await this.usersService.create(dto.username, dto.password, 'user');
+    const payload = { sub: user.id, username: user.name, role: user.role } as const;
     const token = this.jwtService.sign(payload);
     return { token, user };
   }
 
   async login(dto: LoginDto) {
-    const user = await this.usersService.validateUser(dto.username, dto.password);
+    const user = await this.usersService.validateUserByName(dto.username, dto.password);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const payload = { sub: user.id, username: user.name };
+    const payload = { sub: user.id, username: user.name, role: user.role } as const;
     const token = this.jwtService.sign(payload);
     return { token, user };
   }
 
-  me(user: { id: number; username: string }) {
+  me(user: { id: string; username: string; role: 'admin' | 'user' }) {
     return user;
   }
 }

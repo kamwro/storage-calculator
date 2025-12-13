@@ -1,44 +1,52 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, ParseUUIDPipe, UseGuards, Req } from '@nestjs/common';
 import { ContainersService } from './containers.service';
 import { CreateContainerDto } from './dto/create-container.dto';
 import { UpdateContainerDto } from './dto/update-container.dto';
+import { JwtAuthGuard } from '../auth/jwt.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import type { AuthenticatedRequest } from '../shared/auth/types';
 
 @Controller('containers')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ContainersController {
   constructor(private readonly containersService: ContainersService) {}
 
   @Get()
-  findAll() {
-    return this.containersService.findAll();
+  findAll(@Req() req: AuthenticatedRequest) {
+    return this.containersService.findAll(req.user);
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return await this.containersService.findOne(id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
+    return await this.containersService.findOne(id, req.user);
   }
 
   @Post()
-  async create(@Body() dto: CreateContainerDto) {
-    return await this.containersService.create(dto);
+  async create(@Body() dto: CreateContainerDto, @Req() req: AuthenticatedRequest) {
+    return await this.containersService.create(dto, req.user);
   }
 
   @Patch(':id')
-  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateContainerDto) {
-    return await this.containersService.update(id, dto);
+  async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateContainerDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return await this.containersService.update(id, dto, req.user);
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
-    return await this.containersService.remove(id);
+  async remove(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
+    return await this.containersService.remove(id, req.user);
   }
 
   @Post(':id/calculate')
-  async calculate(@Param('id', ParseUUIDPipe) id: string) {
-    return this.containersService.calculate(id);
+  async calculate(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
+    return this.containersService.calculate(id, req.user);
   }
 
   @Get(':id/summary')
-  async summary(@Param('id', ParseUUIDPipe) id: string) {
-    return this.containersService.calculate(id);
+  async summary(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
+    return this.containersService.calculate(id, req.user);
   }
 }
