@@ -4,14 +4,15 @@ import { Repository } from 'typeorm';
 import { ContainerEntity } from '../infra/postgres/entities/container.entity';
 import { CreateContainerDto } from './dto/create-container.dto';
 import { UpdateContainerDto } from './dto/update-container.dto';
-import { ItemTypesService } from '../item-types/item-types.service';
+import { ItemEntity } from '../infra/postgres/entities/item.entity';
 
 @Injectable()
 export class ContainersService {
   constructor(
     @InjectRepository(ContainerEntity)
     private readonly containersRepo: Repository<ContainerEntity>,
-    private readonly itemTypesService: ItemTypesService,
+    @InjectRepository(ItemEntity)
+    private readonly itemsRepo: Repository<ItemEntity>,
   ) {}
 
   findAll(): Promise<ContainerEntity[]> {
@@ -44,23 +45,27 @@ export class ContainersService {
   async calculate(id: string) {
     const container = await this.findOne(id);
 
-    let totalWeight = 0;
-    let totalVolume = 0;
+    const items = await this.itemsRepo.find({ where: { container: { id } as any } });
 
-    for (const item of container.items) {
-      const itemType = await this.itemTypesService.findById(item.itemTypeId);
-      totalWeight += item.quantity * itemType.weightPerKg;
-      totalVolume += item.quantity * itemType.volumePerM3;
+    let totalWeightKg = 0;
+    let totalVolumeM3 = 0;
+
+    for (const item of items) {
+      // itemType is eager-loaded on ItemEntity
+      const unitW = item.itemType.unitWeightKg;
+      const unitV = item.itemType.unitVolumeM3;
+      totalWeightKg += item.quantity * unitW;
+      totalVolumeM3 += item.quantity * unitV;
     }
 
     return {
       containerId: container.id,
-      totalWeight,
-      totalVolume,
-      maxWeight: container.maxWeight,
-      maxVolume: container.maxVolume,
-      weightExceeded: totalWeight > container.maxWeight,
-      volumeExceeded: totalVolume > container.maxVolume,
+      totalWeightKg,
+      totalVolumeM3,
+      maxWeightKg: container.maxWeightKg,
+      maxVolumeM3: container.maxVolumeM3,
+      weightExceeded: totalWeightKg > container.maxWeightKg,
+      volumeExceeded: totalVolumeM3 > container.maxVolumeM3,
     };
   }
 }

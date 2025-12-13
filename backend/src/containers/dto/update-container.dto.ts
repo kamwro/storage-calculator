@@ -1,6 +1,4 @@
-import { IsString, IsNumber, Min, IsArray, ValidateNested, IsNotEmpty, IsOptional } from 'class-validator';
-import { Type } from 'class-transformer';
-import { ProjectItemDto } from './container.shared.dto';
+import { IsString, IsNumber, Min, IsOptional } from 'class-validator';
 
 export class UpdateContainerDto {
   @IsOptional()
@@ -10,16 +8,10 @@ export class UpdateContainerDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
-  maxWeight?: number;
+  maxWeightKg?: number;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
-  maxVolume?: number;
-
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ProjectItemDto)
-  items?: ProjectItemDto[];
+  maxVolumeM3?: number;
 }

@@ -9,8 +9,17 @@ export class ItemTypeEntity {
   name: string;
 
   @Column('float')
-  weightPerKg: number;
+  unitWeightKg: number;
 
   @Column('float')
-  volumePerM3: number;
+  unitVolumeM3: number;
+
+  @Column('float', { nullable: true })
+  lengthM?: number | null;
+
+  @Column('float', { nullable: true })
+  widthM?: number | null;
+
+  @Column('float', { nullable: true })
+  heightM?: number | null;
 }

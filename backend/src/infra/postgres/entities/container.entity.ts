@@ -1,10 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-export interface ContainerItem {
-  itemTypeId: string;
-  quantity: number;
-}
-
 @Entity()
 export class ContainerEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -14,11 +9,8 @@ export class ContainerEntity {
   name: string;
 
   @Column('float')
-  maxWeight: number;
+  maxWeightKg: number;
 
   @Column('float')
-  maxVolume: number;
-
-  @Column({ type: 'jsonb', default: [] })
-  items: ContainerItem[];
+  maxVolumeM3: number;
 }

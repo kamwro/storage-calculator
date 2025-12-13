@@ -1,14 +1,30 @@
-import { IsNumber, Min, IsUUID } from 'class-validator';
+import { IsNumber, Min, IsString, IsOptional, IsNotEmpty } from 'class-validator';
 
 export class CreateItemTypeDto {
-  @IsUUID()
+  @IsString()
+  @IsNotEmpty()
   name: string;
 
   @IsNumber()
   @Min(0)
-  weightPerKg: number;
+  unitWeightKg: number;
 
   @IsNumber()
   @Min(0)
-  volumePerM3: number;
+  unitVolumeM3: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  lengthM?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  widthM?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  heightM?: number;
 }

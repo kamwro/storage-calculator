@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, ParseUUIDPipe } from '@nestjs/common';
 import { ContainersService } from './containers.service';
 import { CreateContainerDto } from './dto/create-container.dto';
 import { UpdateContainerDto } from './dto/update-container.dto';
@@ -13,7 +13,7 @@ export class ContainersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: string) {
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
     return await this.containersService.findOne(id);
   }
 
@@ -23,17 +23,22 @@ export class ContainersController {
   }
 
   @Patch(':id')
-  async update(@Param('id', ParseIntPipe) id: string, @Body() dto: UpdateContainerDto) {
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateContainerDto) {
     return await this.containersService.update(id, dto);
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: string) {
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
     return await this.containersService.remove(id);
   }
 
   @Post(':id/calculate')
-  async calculate(@Param('id', ParseIntPipe) id: string) {
+  async calculate(@Param('id', ParseUUIDPipe) id: string) {
+    return this.containersService.calculate(id);
+  }
+
+  @Get(':id/summary')
+  async summary(@Param('id', ParseUUIDPipe) id: string) {
     return this.containersService.calculate(id);
   }
 }
