@@ -9,6 +9,8 @@
     "dev:backend": "pnpm --filter backend dev",
     "build:backend": "pnpm --filter backend build",
     "dev:frontend": "pnpm --filter frontend dev",
+    "lint:all": "pnpm --filter backend lint && pnpm --filter frontend lint",
+    "build:all": "pnpm --filter backend build && pnpm --filter frontend build",
     "format": "prettier \"**/*.{ts,tsx,js,jsx,json,md,css,html}\" --write",
     "deps:check:major": "ncu --target latest",
     "deps:update:minor": "ncu -u --target minor && pnpm install",

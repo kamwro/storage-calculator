@@ -54,11 +54,13 @@ export class CalculatorService {
       return true;
     };
 
-    const pickContainerFirstFit = (typeId: string) => state.find((s) => placeUnitTry(s, typeId));
+    // Helper to check if placing a unit would fit (without mutating state)
     const placeUnitTry = (s: typeof state[number], typeId: string) => {
       const t = typeMap.get(typeId)!;
       return s.usedW + t.unitWeightKg <= s.container.maxWeightKg && s.usedV + t.unitVolumeM3 <= s.container.maxVolumeM3;
     };
+
+    const pickContainerFirstFit = (typeId: string) => state.find((s) => placeUnitTry(s, typeId));
 
     const pickContainerBestFit = (typeId: string) => {
       const t = typeMap.get(typeId)!;
@@ -115,7 +117,8 @@ export class CalculatorService {
       let q = dem.quantity;
       if (q <= 0) continue;
       while (q > 0) {
-        const pick = input.strategy === 'first_fit' ? this.pickFirstFit(typeId => pickContainerFirstFit(typeId), dem.itemTypeId)
+        const pick = input.strategy === 'first_fit'
+          ? pickContainerFirstFit(dem.itemTypeId)
           : pickContainerBestFit(dem.itemTypeId);
         if (!pick) break; // cannot place more units of this type
         // place one unit
@@ -126,10 +129,6 @@ export class CalculatorService {
     }
 
     return this.buildResult(state, unallocated);
-  }
-
-  private pickFirstFit(picker: (typeId: string) => any, typeId: string) {
-    return picker(typeId);
   }
 
   private buildResult(

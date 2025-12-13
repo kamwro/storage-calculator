@@ -62,7 +62,7 @@ const App = () => {
       <section className="grid md:grid-cols-2 gap-6">
         <div className="border rounded p-4">
           <h2 className="text-lg font-semibold mb-3">Item Types</h2>
-          <ItemTypesManager onCreated={async () => {
+          <ItemTypesManager canCreate={user?.role === 'admin'} onCreated={async () => {
             const res = await api.get('/item-types');
             setItemTypes(res.data);
           }} />

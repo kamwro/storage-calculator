@@ -208,6 +208,19 @@ Environment
 - Important variables: `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_NAME`, `JWT_SECRET`
 - Python env template: `python/.env.sample` (`X_CARGO_PROCESSOR_API_KEY`)
 
+Developer checks (lint, build, format)
+
+- Install workspace deps: `pnpm -w install`
+- Lint all packages: `pnpm run lint:all`
+- Build all packages: `pnpm run build:all`
+- Format code: `pnpm run format`
+
+Git hooks (optional)
+
+- On first clone, run `pnpm install` at the repo root to install husky.
+- Pre-commit: formats staged files with Prettier.
+- Pre-push: runs backend/frontend lint and a dependency check.
+
 Scripts
 
 - `./scripts/seed.sh` — installs backend deps (if needed), runs migrations (if configured), and executes the seed script.

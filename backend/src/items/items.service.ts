@@ -22,7 +22,7 @@ export class ItemsService {
 
   async listByContainer(containerId: string, user: AuthUser): Promise<ItemEntity[]> {
     await this.ensureContainer(containerId, user);
-    return this.itemsRepo.find({ where: { container: { id: containerId } as any } });
+    return this.itemsRepo.find({ where: { container: { id: containerId } } });
   }
 
   async create(containerId: string, dto: CreateItemDto, user: AuthUser): Promise<ItemEntity> {
@@ -43,7 +43,7 @@ export class ItemsService {
     await this.ensureContainer(item.container.id, user);
     if (dto.itemTypeId) {
       const itemType = await this.ensureItemType(dto.itemTypeId);
-      (item as any).itemType = itemType;
+      item.itemType = itemType;
     }
     if (dto.quantity !== undefined) item.quantity = dto.quantity;
     if (dto.note !== undefined) item.note = dto.note;

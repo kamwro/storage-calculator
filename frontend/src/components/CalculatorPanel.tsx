@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import api from '../api';
 
 type ItemType = { id: string; name: string; unitWeightKg: number; unitVolumeM3: number };

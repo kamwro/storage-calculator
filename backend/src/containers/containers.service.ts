@@ -19,7 +19,7 @@ export class ContainersService {
 
   findAll(user: AuthUser): Promise<ContainerEntity[]> {
     if (user.role === 'admin') return this.containersRepo.find();
-    return this.containersRepo.find({ where: { ownerId: user.id } as any });
+    return this.containersRepo.find({ where: { ownerId: user.id } });
   }
 
   async findOne(id: string, user?: AuthUser): Promise<ContainerEntity> {
@@ -52,7 +52,7 @@ export class ContainersService {
   async calculate(id: string, user: AuthUser) {
     const container = await this.findOne(id, user);
 
-    const items = await this.itemsRepo.find({ where: { container: { id } as any } });
+    const items = await this.itemsRepo.find({ where: { container: { id } } });
 
     let totalWeightKg = 0;
     let totalVolumeM3 = 0;
@@ -71,6 +71,10 @@ export class ContainersService {
       totalVolumeM3,
       maxWeightKg: container.maxWeightKg,
       maxVolumeM3: container.maxVolumeM3,
+      utilization: {
+        weightPct: container.maxWeightKg ? totalWeightKg / container.maxWeightKg : 0,
+        volumePct: container.maxVolumeM3 ? totalVolumeM3 / container.maxVolumeM3 : 0,
+      },
       weightExceeded: totalWeightKg > container.maxWeightKg,
       volumeExceeded: totalVolumeM3 > container.maxVolumeM3,
     };

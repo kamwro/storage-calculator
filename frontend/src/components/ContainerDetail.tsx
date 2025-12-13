@@ -16,6 +16,7 @@ export default function ContainerDetail({ id, itemTypes, onChanged }: { id: stri
     totalVolumeM3: number;
     maxWeightKg: number;
     maxVolumeM3: number;
+    utilization?: { weightPct: number; volumePct: number };
     weightExceeded: boolean;
     volumeExceeded: boolean;
   } | null>(null);
@@ -156,6 +157,34 @@ export default function ContainerDetail({ id, itemTypes, onChanged }: { id: stri
             <SummaryRow label="Max Weight" value={summary.maxWeightKg} unit="kg" />
             <SummaryRow label="Max Volume" value={summary.maxVolumeM3} unit="m³" />
           </div>
+          {summary.utilization && (
+            <div className="mt-3 space-y-2">
+              <div>
+                <div className="flex justify-between text-xs text-gray-600 mb-1">
+                  <span>Weight Utilization</span>
+                  <span>{Math.round(summary.utilization.weightPct * 100)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 h-2 rounded">
+                  <div
+                    className={`${summary.weightExceeded ? 'bg-red-600' : 'bg-green-600'} h-2 rounded`}
+                    style={{ width: `${Math.min(100, Math.round(summary.utilization.weightPct * 100))}%` }}
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-xs text-gray-600 mb-1">
+                  <span>Volume Utilization</span>
+                  <span>{Math.round(summary.utilization.volumePct * 100)}%</span>
+                </div>
+                <div className="w-full bg-gray-200 h-2 rounded">
+                  <div
+                    className={`${summary.volumeExceeded ? 'bg-red-600' : 'bg-blue-600'} h-2 rounded`}
+                    style={{ width: `${Math.min(100, Math.round(summary.utilization.volumePct * 100))}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           <div className="mt-2 text-sm">
             <span className={summary.weightExceeded ? 'text-red-600' : 'text-green-700'}>
               {summary.weightExceeded ? 'Weight exceeded' : 'Weight OK'}

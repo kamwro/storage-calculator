@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import api from '../api';
 
 type Container = { id: string; name: string; maxWeightKg: number; maxVolumeM3: number };
