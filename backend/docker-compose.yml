@@ -40,6 +40,17 @@ services:
     networks:
       - storage-calculator
 
+  cargo-processor:
+    build:
+      context: ..
+      dockerfile: ./python/Dockerfile
+    environment:
+      X_CARGO_PROCESSOR_API_KEY: ${X_CARGO_PROCESSOR_API_KEY:-dev-key}
+    ports:
+      - "${CARGO_PROCESSOR_PORT:-8000}:8000"
+    networks:
+      - storage-calculator
+
 volumes:
   postgres-data:
 

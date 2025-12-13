@@ -6,7 +6,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      secretOrKey: 'super-secret-key-change-me',
+      secretOrKey: process.env.JWT_SECRET || 'super-secret-key-change-me',
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     });
   }

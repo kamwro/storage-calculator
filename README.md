@@ -105,6 +105,24 @@ Seed content:
 - Containers: A/B with `maxWeightKg`, `maxVolumeM3`
 - Items: few sample rows per container
 
+Seeding via Python helper (calls Backend HTTP API)
+
+If you prefer to seed through the HTTP API (and verify auth + guards), use the Python helper:
+
+```
+# Optionally set custom backend URL and credentials (admin by default)
+set BACKEND_URL=http://localhost:3000/api
+set SEED_USERNAME=admin@example.com
+set SEED_PASSWORD=admin1234
+
+python ./scripts/seed.py
+```
+
+Environment variables (with defaults):
+- `BACKEND_URL` (default `http://localhost:3000/api`)
+- `SEED_USERNAME` (default `admin@example.com`)
+- `SEED_PASSWORD` (default `admin1234`)
+
 Frontend (React + Vite)
 
 Pages/components (planned):
@@ -115,9 +133,9 @@ Pages/components (planned):
 
 Design goals: simple, responsive, “pretty enough” with minimal CSS (e.g., Tailwind or lightweight component lib). PRs welcome.
 
-Python service (Phase 2)
+Python service (Cargo Processor)
 
-We will add a small Python service exposing a GraphQL mutation to ingest raw data and return normalized Item Types/Items. The backend will authenticate via a service key and either push raw payloads to Python or pull normalized data.
+I include a small Python service exposing a GraphQL mutation to ingest raw data and return normalized Item Types/Items. Tools (or the backend) authenticate via a service key header.
 
 GraphQL sketch:
 
@@ -128,7 +146,28 @@ type NormalizeResult { itemTypes: [ItemTypeInput!]!, items: [ItemInput!]! }
 type Mutation { normalize(source: String!, payload: JSON!): NormalizeResult! }
 ```
 
-We will include a reference Python app (FastAPI + Strawberry GraphQL) and a helper script to post a demo payload.
+Where to find it:
+- App: `python/main.py` (FastAPI + Strawberry GraphQL)
+- Env sample: `python/.env.sample` (set `X_CARGO_PROCESSOR_API_KEY`)
+- Dockerfile: `python/Dockerfile`
+- Example client: `python/examples/post_demo_payload.py`
+
+Run locally (without Docker):
+
+```
+cd python
+cp .env.sample .env
+pip install -r requirements.txt
+python -m uvicorn main:app --reload --port 8000
+```
+
+Send a demo request:
+
+```
+set CARGO_PROCESSOR_URL=http://localhost:8000
+set X_CARGO_PROCESSOR_API_KEY=dev-key
+python python/examples/post_demo_payload.py
+```
 
 Roadmap
 
@@ -142,7 +181,7 @@ Roadmap
 
 Deployment (Docker Compose)
 
-Backend + Postgres (from `backend/` directory):
+Backend + Postgres + Cargo Processor (from `backend/` directory):
 
 ```
 cp backend/.env.example backend/.env
@@ -159,14 +198,20 @@ Once services are up:
 - Run migrations (inside your dev shell): `pnpm --filter backend run migration:run`
 - Seed data: `pnpm --filter backend run seed` or `./scripts/seed.sh`
 
+Cargo Processor service:
+- Exposed at `http://localhost:8000/graphql`
+- Env: `X_CARGO_PROCESSOR_API_KEY` (defaults to `dev-key` via compose)
+
 Environment
 
 - Backend env template: `backend/.env.example`
 - Important variables: `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_NAME`, `JWT_SECRET`
+- Python env template: `python/.env.sample` (`X_CARGO_PROCESSOR_API_KEY`)
 
 Scripts
 
 - `./scripts/seed.sh` — installs backend deps (if needed), runs migrations (if configured), and executes the seed script.
+- `./scripts/seed.py` — seeds via Backend HTTP API (uses `BACKEND_URL`, `SEED_USERNAME`, `SEED_PASSWORD`).
 
 ADRs
 
