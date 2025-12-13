@@ -21,13 +21,13 @@ How pieces fit together
 
 Quickstart (dev)
 
-1) Install prerequisites: Node 24.x, pnpm, Docker (for Postgres), Python 3.11+ (optional for the Python service).
-2) Install deps: `pnpm install`
-3) Backend env: copy `backend/.env.example` → `backend/.env` and set DB_*, JWT_SECRET
-4) Start services:
+1. Install prerequisites: Node 24.x, pnpm, Docker (for Postgres), Python 3.11+ (optional for the Python service).
+2. Install deps: `pnpm install`
+3. Backend env: copy `backend/.env.example` → `backend/.env` and set DB\_\*, JWT_SECRET
+4. Start services:
    - Backend: `pnpm --filter backend dev`
    - Frontend: `pnpm --filter frontend dev`
-5) Database:
+5. Database:
    - Run migrations: `pnpm --filter backend run migration:run`
    - Seed demo data: `pnpm --filter backend run seed` (or use `scripts/seed.py`)
 
@@ -66,6 +66,11 @@ Items
 Calculator
 
 - POST `/calculator/evaluate`
+
+Auth & ownership:
+
+- Requires JWT (authenticated request).
+- Non-admin users may only evaluate using containers they own; admins can evaluate with any containers.
 
 Request:
 

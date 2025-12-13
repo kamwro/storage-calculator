@@ -1,9 +1,11 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { ContainerEntity } from '../infra/postgres/entities/container.entity';
 import { ItemTypeEntity } from '../infra/postgres/entities/item-type.entity';
 import { EvaluateRequestDto } from './dto/evaluate.dto';
+import type { AuthenticatedRequest } from '../shared/auth/types';
+type AuthUser = AuthenticatedRequest['user'];
 
 type AllocationItem = { itemTypeId: string; quantity: number };
 
@@ -16,13 +18,17 @@ export class CalculatorService {
     private readonly itemTypesRepo: Repository<ItemTypeEntity>,
   ) {}
 
-  async evaluate(input: EvaluateRequestDto) {
+  async evaluate(input: EvaluateRequestDto, user: AuthUser) {
     if (!input.items?.length) throw new BadRequestException('items cannot be empty');
     if (!input.containers?.length) throw new BadRequestException('containers cannot be empty');
 
     const containers = await this.containersRepo.find({ where: { id: In(input.containers) } });
     if (containers.length !== input.containers.length) {
       throw new BadRequestException('One or more containers not found');
+    }
+    if (user.role !== 'admin') {
+      const unauthorized = containers.find((c) => c.ownerId !== user.id);
+      if (unauthorized) throw new ForbiddenException('You cannot use containers you do not own');
     }
 
     const itemTypeIds = Array.from(new Set(input.items.map((i) => i.itemTypeId)));
