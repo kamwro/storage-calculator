@@ -6,6 +6,7 @@
     "node": "^24.11.1"
   },
   "scripts": {
+    "lint": "pnpm -w run lint:all",
     "dev:backend": "pnpm --filter backend dev",
     "build:backend": "pnpm --filter backend build",
     "dev:frontend": "pnpm --filter frontend dev",
