@@ -7,11 +7,13 @@ Status: Accepted
 Context
 
 The repository is a small monorepo with three parts:
+
 - Backend (NestJS/TypeScript)
 - Frontend (React/Vite/TypeScript)
 - Optional Python GraphQL normalizer (FastAPI + Strawberry)
 
 Previously, we had a single CI workflow. We want clearer ownership, faster runs, and security visibility. The goal is to:
+
 - Split CI by service (backend, frontend, python) with explicit lint/build/test steps.
 - Add SBOM generation and vulnerability scanning for each service.
 - Provide an on-demand (manual) end-to-end (E2E) workflow that boots services and runs Playwright tests.

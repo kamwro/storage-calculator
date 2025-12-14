@@ -20,13 +20,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'pnpm'
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
+          cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm -w install --frozen-lockfile
       - name: Lint (frontend)
@@ -37,13 +38,14 @@ jobs:
     needs: [lint]
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: 'pnpm'
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
+          cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm -w install --frozen-lockfile
       - name: Build (frontend)
@@ -76,6 +78,6 @@ jobs:
           fail-build: false
           output-format: sarif
       - name: Upload SARIF to code scanning
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: results.sarif

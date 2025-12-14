@@ -324,6 +324,36 @@ Scripts
 - `./scripts/seed.sh` — installs backend deps (if needed), runs migrations (if configured), and executes the seed script.
 - `./scripts/seed.py` — seeds via Backend HTTP API (uses `BACKEND_URL`, `SEED_USERNAME`, `SEED_PASSWORD`).
 
+CI & Workflows
+
+This repo uses GitHub Actions with split workflows per service and an optional manual E2E run.
+
+- Backend CI: `.github/workflows/backend.yml`
+  - Jobs: lint (ESLint), build (NestJS), unit tests (Jest), SBOM (Syft), vulnerability scan (Grype → SARIF uploaded).
+  - Runs on pushes/PRs that touch `backend/**` or lock/workspace files.
+
+- Frontend CI: `.github/workflows/frontend.yml`
+  - Jobs: lint (ESLint), build (Vite), SBOM (Syft), vulnerability scan (Grype → SARIF uploaded).
+  - Runs on pushes/PRs that touch `frontend/**` or lock/workspace files.
+
+- Python Service CI: `.github/workflows/python.yml`
+  - Jobs: lint (ruff), syntax check (py_compile), unit tests discovery, SBOM (Syft), vulnerability scan (Grype → SARIF uploaded).
+  - Runs on pushes/PRs that touch `python/**`.
+
+- Monorepo CI (legacy): `.github/workflows/ci.yml`
+  - Jobs: lint + build for frontend and backend. Kept for convenience; per‑service workflows are primary.
+
+- Manual E2E workflow: `.github/workflows/e2e.yml`
+  - Trigger: GitHub → Actions → “E2E (manual)” → Run workflow.
+  - Provisions Postgres, generates `backend/.env`, builds and starts backend/frontend dev servers, runs migrations + seed, installs Playwright browsers, then executes `pnpm e2e:all`.
+  - Artifacts: uploads Playwright report and `test-results/`.
+
+Tooling notes
+
+- Node is set up via `actions/setup-node@v4` and pnpm via `pnpm/action-setup@v4` (pnpm is installed before using it). Caching uses the workspace `pnpm-lock.yaml`.
+- SBOMs are generated in SPDX JSON format and uploaded as artifacts.
+- Vulnerability findings are uploaded as SARIF to the repository’s “Code scanning alerts”.
+
 ADRs
 
 - Frameworks and choices are documented in the `ADR/` folder:
