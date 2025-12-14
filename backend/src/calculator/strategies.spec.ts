@@ -21,8 +21,9 @@ describe('calculator strategies', () => {
     ],
   ]);
 
-  function makeState(overrides?: Partial<ContainerState<{ maxWeightKg: number; maxVolumeM3: number }>>[]):
-    | ContainerState<{ maxWeightKg: number; maxVolumeM3: number }>[] {
+  function makeState(
+    overrides?: Partial<ContainerState<{ maxWeightKg: number; maxVolumeM3: number }>>[],
+  ): ContainerState<{ maxWeightKg: number; maxVolumeM3: number }>[] {
     const base: ContainerState<{ maxWeightKg: number; maxVolumeM3: number }>[] = [
       {
         container: { maxWeightKg: 50, maxVolumeM3: 1.0 },

@@ -1,4 +1,4 @@
-import type { ContainerState,StrategyFn } from './strategy.types';
+import type { ContainerState, StrategyFn } from './strategy.types';
 
 export const firstFit: StrategyFn<{
   maxWeightKg: number;
