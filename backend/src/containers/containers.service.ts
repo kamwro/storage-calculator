@@ -6,6 +6,8 @@ import { CreateContainerDto } from './dto/create-container.dto';
 import { UpdateContainerDto } from './dto/update-container.dto';
 import { ItemEntity } from '../infra/postgres/entities/item.entity';
 import type { AuthenticatedRequest } from '../shared/auth/types';
+import { PaginationQueryDto, PaginatedResponse } from '../shared/dto/pagination.dto';
+import { buildOrder, toPaginatedResponse } from '../shared/pagination/pagination.util';
 type AuthUser = AuthenticatedRequest['user'];
 
 @Injectable()
@@ -17,9 +19,22 @@ export class ContainersService {
     private readonly itemsRepo: Repository<ItemEntity>,
   ) {}
 
-  findAll(user: AuthUser): Promise<ContainerEntity[]> {
-    if (user.role === 'admin') return this.containersRepo.find();
-    return this.containersRepo.find({ where: { ownerId: user.id } });
+  // Overloads to preserve backward compatibility with existing tests
+  async findAll(user: AuthUser): Promise<ContainerEntity[]>;
+  async findAll(user: AuthUser, q: PaginationQueryDto): Promise<PaginatedResponse<ContainerEntity>>;
+  async findAll(user: AuthUser, q?: PaginationQueryDto): Promise<ContainerEntity[] | PaginatedResponse<ContainerEntity>> {
+    const where = user.role === 'admin' ? {} : ({ ownerId: user.id } as any);
+    if (!q) {
+      return this.containersRepo.find({ where });
+    }
+    const order = buildOrder<ContainerEntity>(['name', 'maxWeightKg', 'maxVolumeM3', 'id'], q.sort, q.dir);
+    const [data, total] = await this.containersRepo.findAndCount({
+      where,
+      order,
+      skip: q.offset ?? 0,
+      take: q.limit ?? 20,
+    });
+    return toPaginatedResponse(data, total, q.offset ?? 0, q.limit ?? 20);
   }
 
   async findOne(id: string, user?: AuthUser): Promise<ContainerEntity> {

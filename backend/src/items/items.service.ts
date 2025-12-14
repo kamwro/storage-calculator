@@ -7,6 +7,8 @@ import { ItemTypeEntity } from '../infra/postgres/entities/item-type.entity';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import type { AuthenticatedRequest } from '../shared/auth/types';
+import { PaginationQueryDto, PaginatedResponse } from '../shared/dto/pagination.dto';
+import { buildOrder, toPaginatedResponse } from '../shared/pagination/pagination.util';
 type AuthUser = AuthenticatedRequest['user'];
 
 @Injectable()
@@ -20,9 +22,29 @@ export class ItemsService {
     private readonly itemTypesRepo: Repository<ItemTypeEntity>,
   ) {}
 
-  async listByContainer(containerId: string, user: AuthUser): Promise<ItemEntity[]> {
+  // Overloads to preserve backward compatibility with existing tests
+  async listByContainer(containerId: string, user: AuthUser): Promise<ItemEntity[]>;
+  async listByContainer(
+    containerId: string,
+    q: PaginationQueryDto,
+    user: AuthUser,
+  ): Promise<PaginatedResponse<ItemEntity>>;
+  async listByContainer(
+    containerId: string,
+    qOrUser: PaginationQueryDto | AuthUser,
+    maybeUser?: AuthUser,
+  ): Promise<ItemEntity[] | PaginatedResponse<ItemEntity>> {
+    const hasPagination = !!maybeUser;
+    const user = (hasPagination ? maybeUser : (qOrUser as AuthUser)) as AuthUser;
     await this.ensureContainer(containerId, user);
-    return this.itemsRepo.find({ where: { container: { id: containerId } } });
+    const where = { container: { id: containerId } } as any;
+    if (!hasPagination) {
+      return this.itemsRepo.find({ where });
+    }
+    const q = qOrUser as PaginationQueryDto;
+    const order = buildOrder<ItemEntity>(['quantity', 'id'], q.sort, q.dir);
+    const [data, total] = await this.itemsRepo.findAndCount({ where, order, skip: q.offset ?? 0, take: q.limit ?? 20 });
+    return toPaginatedResponse(data, total, q.offset ?? 0, q.limit ?? 20);
   }
 
   async create(containerId: string, dto: CreateItemDto, user: AuthUser): Promise<ItemEntity> {

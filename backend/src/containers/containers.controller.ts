@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Param, Patch, Delete, ParseUUIDPipe, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Delete, ParseUUIDPipe, UseGuards, Req, Query } from '@nestjs/common';
 import { ContainersService } from './containers.service';
 import { CreateContainerDto } from './dto/create-container.dto';
 import { UpdateContainerDto } from './dto/update-container.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import type { AuthenticatedRequest } from '../shared/auth/types';
+import { PaginationQueryDto } from '../shared/dto/pagination.dto';
 
 @Controller('containers')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -12,8 +13,8 @@ export class ContainersController {
   constructor(private readonly containersService: ContainersService) {}
 
   @Get()
-  findAll(@Req() req: AuthenticatedRequest) {
-    return this.containersService.findAll(req.user);
+  findAll(@Req() req: AuthenticatedRequest, @Query() q: PaginationQueryDto) {
+    return this.containersService.findAll(req.user, q);
   }
 
   @Get(':id')

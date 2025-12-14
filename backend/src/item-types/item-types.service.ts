@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateItemTypeDto } from './dto/create-item-type.dto';
 import { ItemTypeEntity } from '../infra/postgres/entities/item-type.entity';
+import { PaginationQueryDto, PaginatedResponse } from '../shared/dto/pagination.dto';
+import { buildOrder, toPaginatedResponse } from '../shared/pagination/pagination.util';
 
 @Injectable()
 export class ItemTypesService {
@@ -11,8 +13,14 @@ export class ItemTypesService {
     private readonly repo: Repository<ItemTypeEntity>,
   ) {}
 
-  findAll(): Promise<ItemTypeEntity[]> {
-    return this.repo.find();
+  async findAll(q: PaginationQueryDto): Promise<PaginatedResponse<ItemTypeEntity>> {
+    const order = buildOrder<ItemTypeEntity>(['name', 'unitWeightKg', 'unitVolumeM3', 'id'], q.sort, q.dir);
+    const [data, total] = await this.repo.findAndCount({
+      order,
+      skip: q.offset ?? 0,
+      take: q.limit ?? 20,
+    });
+    return toPaginatedResponse(data, total, q.offset ?? 0, q.limit ?? 20);
   }
 
   async create(dto: CreateItemTypeDto): Promise<ItemTypeEntity> {

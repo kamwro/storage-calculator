@@ -1,10 +1,11 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards, Req, Query } from '@nestjs/common';
 import { ItemsService } from './items.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import type { AuthenticatedRequest } from '../shared/auth/types';
+import { PaginationQueryDto } from '../shared/dto/pagination.dto';
 
 @Controller()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -12,8 +13,12 @@ export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
   @Get('containers/:containerId/items')
-  list(@Param('containerId', ParseUUIDPipe) containerId: string, @Req() req: AuthenticatedRequest) {
-    return this.itemsService.listByContainer(containerId, req.user);
+  list(
+    @Param('containerId', ParseUUIDPipe) containerId: string,
+    @Req() req: AuthenticatedRequest,
+    @Query() q: PaginationQueryDto,
+  ) {
+    return this.itemsService.listByContainer(containerId, q, req.user);
   }
 
   @Post('containers/:containerId/items')
