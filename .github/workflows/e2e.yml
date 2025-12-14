@@ -1,0 +1,95 @@
+name: E2E (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      apiBaseUrl:
+        description: 'API base URL (default http://localhost:3000/api)'
+        required: false
+      uiBaseUrl:
+        description: 'UI base URL (default http://localhost:5173)'
+        required: false
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        ports: ['5432:5432']
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: app
+        options: >-
+          --health-cmd "pg_isready -U app -d app" 
+          --health-interval 10s 
+          --health-timeout 5s 
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm -w install --frozen-lockfile
+
+      - name: Create backend .env
+        run: |
+          cat > backend/.env <<'EOF'
+          DB_HOST=127.0.0.1
+          DB_PORT=5432
+          DB_USER=app
+          DB_PASS=app
+          DB_NAME=app
+          JWT_SECRET=dev-secret
+          EOF
+
+      - name: Build services
+        run: |
+          pnpm --filter backend build
+          pnpm --filter frontend build
+
+      - name: Start backend and frontend
+        run: |
+          pnpm --filter backend dev &
+          pnpm --filter frontend dev &
+          echo "Started backend and frontend"
+
+      - name: Wait for services
+        run: |
+          npm i -g wait-on
+          wait-on tcp:3000 http://localhost:5173
+
+      - name: Run migrations and seed
+        run: |
+          pnpm --filter backend run migration:run
+          pnpm --filter backend run seed
+
+      - name: Install Playwright (browsers)
+        run: npx playwright install --with-deps
+
+      - name: Run E2E tests (api + ui)
+        env:
+          API_BASE_URL: ${{ github.event.inputs.apiBaseUrl || 'http://localhost:3000/api' }}
+          UI_BASE_URL: ${{ github.event.inputs.uiBaseUrl || 'http://localhost:5173' }}
+        run: pnpm e2e:all
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            playwright-report
+            test-results
