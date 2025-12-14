@@ -29,7 +29,7 @@ const ContainersList: React.FC<Props> = ({ containers, onSelect, onCreated }) =>
       setMaxVolumeM3('');
       onCreated?.();
     } catch (e: any) {
-      setErr(e?.response?.data?.message ?? 'Error creating container');
+      setErr(e?.message ?? 'Error creating container');
     }
   };
 

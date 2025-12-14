@@ -14,7 +14,7 @@ const ItemTypesManager: React.FC<Props> = ({ onCreated, canCreate }) => {
 
   const load = async () => {
     const res = await api.get('/item-types');
-    setItems(res.data);
+    setItems(res.data?.data ?? res.data);
   };
 
   useEffect(() => {

@@ -175,6 +175,24 @@ Pages/components (planned):
 
 Design goals: simple, responsive, “pretty enough” with minimal CSS (e.g., Tailwind or lightweight component lib). PRs welcome.
 
+Frontend setup (dev)
+
+- Env: the UI reads `VITE_API_BASE_URL` (defaults to `/api`). Example for a different port/domain:
+
+```
+# frontend/.env
+VITE_API_BASE_URL=http://localhost:3000/api
+```
+
+- Start dev server: `pnpm --filter frontend dev` (default Vite port is 5173). The backend already enables CORS for `http://localhost:5173`.
+- Auth: the app stores the JWT token in `localStorage` and adds it as `Authorization: Bearer <token>` on requests. On `401` it clears the token and returns to login.
+- Error handling: the UI surfaces backend errors using `{ message, code }` from the global error filter.
+
+Frontend and pagination
+
+- List endpoints now return a paginated object: `{ data, total, limit, offset }`.
+- The UI consumes the `data` array for tables and can wire pagination controls using `total`, `limit`, and `offset`.
+
 Python service (Cargo Processor)
 
 I include a small Python service exposing a GraphQL mutation to ingest raw data and return normalized Item Types/Items. Tools (or the backend) authenticate via a service key header.
@@ -214,13 +232,45 @@ python python/examples/post_demo_payload.py
 
 Roadmap
 
-- [x] Containers, Item Types, Items entities and basic APIs
+- [x] Containers, Item Types, Items entities, and basic APIs
 - [x] Calculator with `first_fit` and `best_fit`
 - [ ] RBAC and auth polish (roles, guards), ownership scoping
 - [ ] Seed data + scripts and docs
 - [ ] Frontend wiring for Items, summary, calculator
 - [ ] Python GraphQL service + integration stub
 - [ ] Docker deployment for backend + Postgres (and later frontend + Python service)
+
+End-to-End Testing
+
+Playwright-based E2E tests for the API. These tests exercise auth, RBAC/ownership, item types, containers/items, and the calculator.
+
+Prerequisites:
+- Backend running locally at `http://localhost:3000/api` (default from `backend/src/main.ts`).
+- Postgres configured per backend `.env` and migrations run; seed is optional but recommended.
+
+Commands (from repo root):
+
+```
+pnpm -w install
+
+# Run only API E2E tests
+pnpm run e2e:api
+
+# Run UI E2E tests (placeholder project; add tests under e2e/ui later)
+pnpm run e2e:ui
+
+# Run all projects
+pnpm run e2e:all
+```
+
+Environment overrides:
+
+- `API_BASE_URL` (default `http://localhost:3000/api`)
+- `UI_BASE_URL` (default `http://localhost:5173`)
+
+Notes:
+- Tests create their own users via `/auth/register` and do not rely on global state, but they will write into your configured DB. Use a dedicated test database or a separate schema when running E2E.
+- Some calculator tests attempt to ensure at least one Item Type exists; if none exist and no admin credentials are available (admin: `admin@example.com` / `admin1234` from seed), those parts are skipped.
 
 Deployment (Docker Compose)
 

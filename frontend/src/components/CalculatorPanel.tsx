@@ -39,7 +39,7 @@ const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
       const res = await api.post('/calculator/evaluate', payload);
       setResult(res.data);
     } catch (e: any) {
-      setErr(e?.response?.data?.message ?? 'Failed to evaluate');
+      setErr(e?.message ?? 'Failed to evaluate');
     }
   };
 

@@ -23,8 +23,8 @@ const App = () => {
         .get('/auth/me')
         .then((res) => setUser(res.data))
         .catch(() => setUser(null));
-      api.get('/item-types').then((res) => setItemTypes(res.data));
-      api.get('/containers').then((res) => setContainers(res.data));
+      api.get('/item-types').then((res) => setItemTypes(res.data?.data ?? res.data));
+      api.get('/containers').then((res) => setContainers(res.data?.data ?? res.data));
     }
   }, []);
 
@@ -40,8 +40,8 @@ const App = () => {
               setUser(me.data);
             } catch {}
             const [its, cs] = await Promise.all([api.get('/item-types'), api.get('/containers')]);
-            setItemTypes(its.data);
-            setContainers(cs.data);
+            setItemTypes(its.data?.data ?? its.data);
+            setContainers(cs.data?.data ?? cs.data);
           }}
         />
       </div>
@@ -67,7 +67,7 @@ const App = () => {
             canCreate={user?.role === 'admin'}
             onCreated={async () => {
               const res = await api.get('/item-types');
-              setItemTypes(res.data);
+              setItemTypes(res.data?.data ?? res.data);
             }}
           />
         </div>
@@ -78,7 +78,7 @@ const App = () => {
             onSelect={(id) => setSelectedContainerId(id)}
             onCreated={async () => {
               const res = await api.get('/containers');
-              setContainers(res.data);
+              setContainers(res.data?.data ?? res.data);
             }}
           />
         </div>

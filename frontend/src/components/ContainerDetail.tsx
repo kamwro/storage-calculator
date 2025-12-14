@@ -47,7 +47,7 @@ export default function ContainerDetail({
       api.get(`/containers/${id}/items`),
       api.get(`/containers/${id}/summary`),
     ]);
-    setItems(itemsRes.data);
+    setItems(itemsRes.data?.data ?? itemsRes.data);
     setSummary(sumRes.data);
   };
 
@@ -68,7 +68,7 @@ export default function ContainerDetail({
       await load();
       onChanged?.();
     } catch (e: any) {
-      setError(e?.response?.data?.message ?? 'Failed to add item');
+      setError(e?.message ?? 'Failed to add item');
     }
   };
 

@@ -12,12 +12,16 @@
     "lint:all": "pnpm --filter backend lint && pnpm --filter frontend lint",
     "build:all": "pnpm --filter backend build && pnpm --filter frontend build",
     "format": "prettier \"**/*.{ts,tsx,js,jsx,json,md,css,html}\" --write",
+    "e2e:api": "playwright test -c playwright.config.ts --project=api",
+    "e2e:ui": "playwright test -c playwright.config.ts --project=ui",
+    "e2e:all": "playwright test -c playwright.config.ts",
     "deps:check:major": "ncu --target latest",
     "deps:update:minor": "ncu -u --target minor && pnpm install",
     "prepare": "husky install"
   },
   "devDependencies": {
     "husky": "^9.1.7",
+    "@playwright/test": "^1.49.1",
     "npm-check-updates": "^19.1.2",
     "prettier": "^3.7.4"
   }

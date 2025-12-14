@@ -19,7 +19,7 @@ const AuthForm = ({ onSuccess }: { onSuccess: () => void }) => {
       setToken(token);
       onSuccess();
     } catch (e: any) {
-      setErr(e.response?.data?.message ?? 'Error');
+      setErr(e?.message ?? 'Error');
     }
   };
 
