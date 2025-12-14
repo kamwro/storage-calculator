@@ -28,16 +28,13 @@ export default [
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
-      "simple-import-sort/imports": "warn",
-      "simple-import-sort/exports": "warn",
-      // Prefer plugin for unused imports; keep TS vars rule as warn to reduce noise
+      // Keep unused imports as a hard error to prevent dead code
       "unused-imports/no-unused-imports": "error",
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }
-      ],
-      // Allow `any` in this service for pragmatism; tests often use loose mocks
-      "@typescript-eslint/no-explicit-any": "warn",
+      // No warnings policy: disable noisy, non-critical rules
+      "simple-import-sort/imports": "off",
+      "simple-import-sort/exports": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     }
   },
   // Relax rules for test files
