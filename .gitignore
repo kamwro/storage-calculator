@@ -1,8 +1,9 @@
-# Nestjs specific
-/dist
-/node_modules
-/build
-/tmp
+# Node/TypeScript (monorepo-wide)
+node_modules/
+dist/
+build/
+tmp/
+*.tsbuildinfo
 
 # Logs
 logs
@@ -13,12 +14,45 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# Coverage
+coverage/
+.nyc_output/
+*.lcov
+
+# Playwright artifacts
+test-results/
+playwright-report/
+.playwright/
+
 # dotenv environment variable files
 .env
 .env.development
 .env.test
 .env.production
 
+# PNPM store (if created locally)
+.pnpm-store/
+
 # temp directory
 .temp
 .tmp
+
+# IDE/editor
+.idea/
+.vscode/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python (optional service)
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+*.pyc
+*.pyo
+*.pyd
+htmlcov/
