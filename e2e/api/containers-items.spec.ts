@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 import { authHeader, ensureItemType, login, randUser, register } from './helpers';
 
 test.describe('Containers & Items API', () => {
-  test('user can create a container, list own containers (paginated), and CRUD items (if item type available)', async ({ request }) => {
+  test('user can create a container, list own containers (paginated), and CRUD items (if item type available)', async ({
+    request,
+  }) => {
     // Register & login as a normal user
     const user = randUser();
     expect((await register(request, user)).ok()).toBeTruthy();

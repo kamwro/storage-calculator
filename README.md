@@ -245,6 +245,7 @@ End-to-End Testing
 Playwright-based E2E tests for the API. These tests exercise auth, RBAC/ownership, item types, containers/items, and the calculator.
 
 Prerequisites:
+
 - Backend running locally at `http://localhost:3000/api` (default from `backend/src/main.ts`).
 - Postgres configured per backend `.env` and migrations run; seed is optional but recommended.
 
@@ -269,6 +270,7 @@ Environment overrides:
 - `UI_BASE_URL` (default `http://localhost:5173`)
 
 Notes:
+
 - Tests create their own users via `/auth/register` and do not rely on global state, but they will write into your configured DB. Use a dedicated test database or a separate schema when running E2E.
 - Some calculator tests attempt to ensure at least one Item Type exists; if none exist and no admin credentials are available (admin: `admin@example.com` / `admin1234` from seed), those parts are skipped.
 

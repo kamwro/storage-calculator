@@ -35,7 +35,7 @@ test.describe('Calculator API', () => {
     expect(body.byContainer.find((b: any) => b.containerId === container.id)).toBeTruthy();
   });
 
-  test('non-admin cannot evaluate with another user\'s container (403)', async ({ request }) => {
+  test("non-admin cannot evaluate with another user's container (403)", async ({ request }) => {
     // User A creates container
     const a = randUser();
     await register(request, a);
