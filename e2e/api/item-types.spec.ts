@@ -3,7 +3,7 @@ import { login, randUser, register } from './helpers';
 
 test.describe('Item Types API', () => {
   test('list returns paginated shape', async ({ request }) => {
-    const res = await request.get('/item-types');
+    const res = await request.get('item-types');
     expect(res.ok()).toBeTruthy();
     const body = await res.json();
     // Accept either paginated shape or raw array (for backward compatibility)
@@ -24,7 +24,7 @@ test.describe('Item Types API', () => {
     const log = await login(request, creds);
     const { token } = await log.json();
 
-    const create = await request.post('/item-types', {
+    const create = await request.post('item-types', {
       data: { name: 'UserType', unitWeightKg: 1, unitVolumeM3: 0.01 },
       headers: { Authorization: `Bearer ${token}` },
     });

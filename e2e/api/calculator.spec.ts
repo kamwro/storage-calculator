@@ -7,7 +7,7 @@ test.describe('Calculator API', () => {
     const user = randUser();
     await register(request, user);
     const { token } = await (await login(request, user)).json();
-    const contRes = await request.post('/containers', {
+    const contRes = await request.post('containers', {
       headers: authHeader(token),
       data: { name: 'Calc Cont', maxWeightKg: 100, maxVolumeM3: 1.0 },
     });
@@ -20,7 +20,7 @@ test.describe('Calculator API', () => {
     test.skip(!type, 'No item type available');
 
     // Evaluate
-    const evalRes = await request.post('/calculator/evaluate', {
+    const evalRes = await request.post('calculator/evaluate', {
       headers: authHeader(token),
       data: {
         items: [{ itemTypeId: type.id, quantity: 1 }],
@@ -40,7 +40,7 @@ test.describe('Calculator API', () => {
     const a = randUser();
     await register(request, a);
     const { token: tokenA } = await (await login(request, a)).json();
-    const contRes = await request.post('/containers', {
+    const contRes = await request.post('containers', {
       headers: authHeader(tokenA),
       data: { name: 'A-only', maxWeightKg: 50, maxVolumeM3: 0.5 },
     });
@@ -55,7 +55,7 @@ test.describe('Calculator API', () => {
     const b = randUser();
     await register(request, b);
     const { token: tokenB } = await (await login(request, b)).json();
-    const evalRes = await request.post('/calculator/evaluate', {
+    const evalRes = await request.post('calculator/evaluate', {
       headers: authHeader(tokenB),
       data: {
         items: [{ itemTypeId: type.id, quantity: 1 }],

@@ -11,7 +11,7 @@ test.describe('Containers & Items API', () => {
     const { token } = await (await login(request, user)).json();
 
     // Create container
-    const createRes = await request.post('/containers', {
+    const createRes = await request.post('containers', {
       data: { name: `Cont ${Date.now()}`, maxWeightKg: 100, maxVolumeM3: 1.0 },
       headers: authHeader(token),
     });
@@ -20,7 +20,7 @@ test.describe('Containers & Items API', () => {
     expect(container).toHaveProperty('id');
 
     // List containers (paginated shape)
-    const listRes = await request.get('/containers', { headers: authHeader(token) });
+    const listRes = await request.get('containers', { headers: authHeader(token) });
     expect(listRes.ok()).toBeTruthy();
     const listBody = await listRes.json();
     if (Array.isArray(listBody)) {
@@ -31,7 +31,7 @@ test.describe('Containers & Items API', () => {
     }
 
     // Summary endpoint
-    const sumRes = await request.get(`/containers/${container.id}/summary`, { headers: authHeader(token) });
+    const sumRes = await request.get(`containers/${container.id}/summary`, { headers: authHeader(token) });
     expect(sumRes.ok()).toBeTruthy();
     const summary = await sumRes.json();
     expect(summary.containerId).toBe(container.id);
@@ -44,7 +44,7 @@ test.describe('Containers & Items API', () => {
     }
 
     // Create item
-    const createItemRes = await request.post(`/containers/${container.id}/items`, {
+    const createItemRes = await request.post(`containers/${container.id}/items`, {
       headers: authHeader(token),
       data: { itemTypeId: ensuredType.id, quantity: 2, note: 'e2e' },
     });
@@ -53,14 +53,14 @@ test.describe('Containers & Items API', () => {
     expect(item).toHaveProperty('id');
 
     // List items (paginated)
-    const itemsList = await request.get(`/containers/${container.id}/items`, { headers: authHeader(token) });
+    const itemsList = await request.get(`containers/${container.id}/items`, { headers: authHeader(token) });
     expect(itemsList.ok()).toBeTruthy();
     const itemsBody = await itemsList.json();
     const itemsArr = Array.isArray(itemsBody) ? itemsBody : itemsBody.data;
     expect(itemsArr.find((it: any) => it.id === item.id)).toBeTruthy();
 
     // Update item quantity
-    const upd = await request.patch(`/items/${item.id}`, {
+    const upd = await request.patch(`items/${item.id}`, {
       headers: authHeader(token),
       data: { quantity: 3 },
     });
@@ -69,7 +69,7 @@ test.describe('Containers & Items API', () => {
     expect(updBody.quantity).toBe(3);
 
     // Delete item
-    const del = await request.delete(`/items/${item.id}`, { headers: authHeader(token) });
+    const del = await request.delete(`items/${item.id}`, { headers: authHeader(token) });
     expect(del.ok()).toBeTruthy();
   });
 });

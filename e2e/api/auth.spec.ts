@@ -23,7 +23,7 @@ test.describe('Auth API', () => {
 
   test('invalid login returns 401 with normalized error', async () => {
     const req = await pwRequest.newContext({ baseURL: process.env.API_BASE_URL || 'http://localhost:3000/api' });
-    const res = await req.post('/auth/login', { data: { username: 'nope@example.com', password: 'wrong' } });
+    const res = await req.post('auth/login', { data: { username: 'nope@example.com', password: 'wrong' } });
     expect(res.status()).toBe(401);
     const body = await res.json();
     expect(body).toHaveProperty('message');
