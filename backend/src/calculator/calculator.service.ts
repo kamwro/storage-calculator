@@ -1,10 +1,13 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException,Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+
 import { ContainerEntity } from '../infra/postgres/entities/container.entity';
 import { ItemTypeEntity } from '../infra/postgres/entities/item-type.entity';
-import { EvaluateRequestDto } from './dto/evaluate.dto';
 import type { AuthenticatedRequest } from '../shared/auth/types';
+import { EvaluateRequestDto } from './dto/evaluate.dto';
+import { strategyMap } from './strategies';
+import type { ContainerState } from './strategy.types';
 type AuthUser = AuthenticatedRequest['user'];
 
 type AllocationItem = { itemTypeId: string; quantity: number };
@@ -39,7 +42,7 @@ export class CalculatorService {
     const typeMap = new Map(itemTypes.map((t) => [t.id, t] as const));
 
     // Working state per container
-    const state = containers.map((c) => ({
+    const state: ContainerState<ContainerEntity>[] = containers.map((c) => ({
       container: c,
       usedW: 0,
       usedV: 0,
@@ -61,34 +64,6 @@ export class CalculatorService {
       s.usedV = newV;
       s.items.set(typeId, (s.items.get(typeId) ?? 0) + 1);
       return true;
-    };
-
-    // Helper to check if placing a unit would fit (without mutating state)
-    const placeUnitTry = (s: (typeof state)[number], typeId: string) => {
-      const t = typeMap.get(typeId)!;
-      return s.usedW + t.unitWeightKg <= s.container.maxWeightKg && s.usedV + t.unitVolumeM3 <= s.container.maxVolumeM3;
-    };
-
-    const pickContainerFirstFit = (typeId: string) => state.find((s) => placeUnitTry(s, typeId));
-
-    const pickContainerBestFit = (typeId: string) => {
-      const t = typeMap.get(typeId)!;
-      let best: (typeof state)[number] | undefined;
-      let bestScore = Number.POSITIVE_INFINITY;
-      for (const s of state) {
-        const newW = s.usedW + t.unitWeightKg;
-        const newV = s.usedV + t.unitVolumeM3;
-        if (newW > s.container.maxWeightKg || newV > s.container.maxVolumeM3) continue;
-        // Score: max of remaining capacity ratios (lower is better, packs tighter)
-        const remW = (s.container.maxWeightKg - newW) / s.container.maxWeightKg;
-        const remV = (s.container.maxVolumeM3 - newV) / s.container.maxVolumeM3;
-        const score = Math.max(remW, remV);
-        if (score < bestScore) {
-          bestScore = score;
-          best = s;
-        }
-      }
-      return best;
     };
 
     // Allocation
@@ -126,8 +101,10 @@ export class CalculatorService {
       let q = dem.quantity;
       if (q <= 0) continue;
       while (q > 0) {
-        const pick =
-          input.strategy === 'first_fit' ? pickContainerFirstFit(dem.itemTypeId) : pickContainerBestFit(dem.itemTypeId);
+        const pickFn = strategyMap[input.strategy as 'first_fit' | 'best_fit'];
+        const pick = pickFn
+          ? (pickFn({ state, typeMap, typeId: dem.itemTypeId }) as (typeof state)[number] | undefined)
+          : undefined;
         if (!pick) break; // cannot place more units of this type
         // place one unit
         placeUnit(dem.itemTypeId, pick);
