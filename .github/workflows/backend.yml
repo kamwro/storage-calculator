@@ -28,6 +28,9 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm -w install --frozen-lockfile
+      - name: Install backend deps (ensure local bins)
+        working-directory: backend
+        run: pnpm install --frozen-lockfile
       - name: Lint (backend)
         run: pnpm --filter backend run lint
 
@@ -44,6 +47,9 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm -w install --frozen-lockfile
+      - name: Install backend deps
+        working-directory: backend
+        run: pnpm install --frozen-lockfile
       - name: Build (backend)
         run: pnpm --filter backend run build
 
@@ -60,6 +66,9 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install dependencies
         run: pnpm -w install --frozen-lockfile
+      - name: Install backend deps
+        working-directory: backend
+        run: pnpm install --frozen-lockfile
       - name: Unit tests (backend)
         run: pnpm --filter backend run test -- --ci
 
