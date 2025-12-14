@@ -12,6 +12,7 @@
     "build": "nest build",
     "lint": "eslint .",
     "test": "jest",
+    "test:ci": "jest --ci --passWithNoTests",
     "seed": "ts-node src/seed/seed.ts",
     "deps:check:major": "ncu --target latest",
     "deps:update:minor": "ncu -u --target minor && pnpm install",

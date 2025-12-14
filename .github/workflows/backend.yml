@@ -70,7 +70,7 @@ jobs:
         working-directory: backend
         run: pnpm install --frozen-lockfile
       - name: Unit tests (backend)
-        run: pnpm --filter backend run test -- --ci
+        run: pnpm --filter backend run test:ci
 
   sbom-scan:
     name: SBOM + Vulnerability Scan (backend)
