@@ -1,4 +1,0 @@
-fastapi==0.115.5
-strawberry-graphql==0.257.0
-uvicorn==0.32.1
-python-dotenv==1.0.1

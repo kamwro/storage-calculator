@@ -7,6 +7,7 @@ import { ItemsModule } from './items/items.module';
 import { CalculatorModule } from './calculator/calculator.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppDataSource } from './infra/postgres/data-source';
+import { CargoModule } from './integrations/cargo/cargo.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AppDataSource } from './infra/postgres/data-source';
     ItemTypesModule,
     ItemsModule,
     CalculatorModule,
+    CargoModule,
     TypeOrmModule.forRoot({
       ...AppDataSource.options,
       autoLoadEntities: true,

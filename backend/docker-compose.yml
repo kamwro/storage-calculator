@@ -40,17 +40,6 @@ services:
     networks:
       - storage-calculator
 
-  cargo:
-    build:
-      context: ..
-      dockerfile: ../cargo/Dockerfile
-    environment:
-      X_CARGO_API_KEY: ${X_CARGO_API_KEY:-dev-key}
-    ports:
-      - "${CARGO_PORT:-8000}:8000"
-    networks:
-      - storage-calculator
-
 volumes:
   postgres-data:
 

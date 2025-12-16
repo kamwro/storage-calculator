@@ -10,18 +10,18 @@ Monorepo layout
   - DB migrations + seed script
 - Frontend (React + Vite + Tailwind): `frontend/`
   - Screens for auth, item types, containers + items, and the calculator
-- Cargo Cargo (FastAPI + Strawberry GraphQL): `Cargo/`
-  - Optional service to ingest/normalize raw data into item types and items
+- External Cargo service (FastAPI + Strawberry GraphQL) - separate repository (https://github.com/kamwro/cargo-processor)
+  - Optional service to ingest/normalize raw data into item types and items; configure its URL and API key in the backend
 
 How pieces fit together
 
 - The frontend talks to the backend at `/api`.
 - The backend persists data in Postgres and exposes calculator logic.
-- Tools or backend (future) can call the Cargo service to normalize incoming data, then create item types/items via the backend API.
+- Tools or the backend (future) can call the external Cargo service to normalize incoming data, then create item types/items via the backend API.
 
 Quickstart (dev)
 
-1. Install prerequisites: Node 24.x, pnpm, Docker (for Postgres), Cargo 3.11+ (optional for the Cargo service).
+1. Install prerequisites: Node 24.x, pnpm, Docker (for Postgres). If you plan to run the external Cargo service locally, follow its repository instructions.
 2. Install deps: `pnpm install`
 3. Backend env: copy `backend/.env.example` → `backend/.env` and set DB\_\*, JWT_SECRET
 4. Start services:
@@ -145,9 +145,9 @@ Seed content:
 - Containers: A/B with `maxWeightKg`, `maxVolumeM3`
 - Items: few sample rows per container
 
-Seeding via Cargo helper (calls Backend HTTP API)
+Seeding via helper (calls Backend HTTP API)
 
-If you prefer to seed through the HTTP API (and verify auth + guards), use the Cargo helper:
+If you prefer to seed through the HTTP API (and verify auth + guards), use the provided script:
 
 ```
 # Optionally set custom backend URL and credentials (admin by default)
@@ -155,7 +155,7 @@ set BACKEND_URL=http://localhost:3000/api
 set SEED_USERNAME=admin@example.com
 set SEED_PASSWORD=admin1234
 
-Cargo ./scripts/seed.py
+python ./scripts/seed.py
 ```
 
 Environment variables (with defaults):
@@ -193,9 +193,9 @@ Frontend and pagination
 - List endpoints now return a paginated object: `{ data, total, limit, offset }`.
 - The UI consumes the `data` array for tables and can wire pagination controls using `total`, `limit`, and `offset`.
 
-Cargo service (Cargo)
+Cargo service (external)
 
-I include a small Cargo service exposing a GraphQL mutation to ingest raw data and return normalized Item Types/Items. Tools (or the backend) authenticate via a service key header.
+There is a separate Cargo service exposing a GraphQL mutation to ingest raw data and return normalized Item Types/Items. Tools (or the backend) authenticate via a service key header.
 
 GraphQL sketch:
 
@@ -208,26 +208,32 @@ type Mutation { normalize(source: String!, payload: JSON!): NormalizeResult! }
 
 Where to find it:
 
-- App: `Cargo/main.py` (FastAPI + Strawberry GraphQL)
-- Env sample: `Cargo/.env.sample` (set `X_CARGO_API_KEY`)
-- Dockerfile: `Cargo/Dockerfile`
-- Example client: `Cargo/examples/post_demo_payload.py`
+- See its external repository for source code, environment variables, and run instructions.
 
-Run locally (without Docker):
+Backend ↔ Cargo integration
 
-```
-cd Cargo
-cp .env.sample .env
-pip install -r requirements.txt
-Cargo -m uvicorn main:app --reload --port 8000
-```
+- Configure the backend with the external Cargo URL and API key (see Environment section below).
+- Calls include `X-CARGO-API-KEY: <CARGO_API_KEY>`. If `CARGO_API_TOKEN` is set, the backend will also send `Authorization: Bearer <CARGO_API_TOKEN>`.
+- Suggested environment variables in `backend/.env`:
+  - `CARGO_URL` (e.g., `http://localhost:8000`)
+  - `CARGO_API_KEY` (shared secret expected by Cargo)
+  - `CARGO_API_TOKEN` (optional bearer token; if set, backend adds `Authorization: Bearer <CARGO_API_TOKEN>`)
 
-Send a demo request:
+Example (NestJS/Axios) integration outline:
 
 ```
-set CARGO_URL=http://localhost:8000
-set X_CARGO_API_KEY=dev-key
-Cargo Cargo/examples/post_demo_payload.py
+// pseudo-code
+import axios from 'axios';
+
+const client = axios.create({ baseURL: process.env.CARGO_URL });
+
+async function callCargoNormalize(source, payload) {
+  const res = await client.post('/graphql',
+    { query: 'mutation ($source: String!, $payload: JSON!) { normalize(source: $source, payload: $payload) { itemTypes { name unitWeightKg unitVolumeM3 } items { itemTypeName quantity } } }', variables: { source, payload } },
+    { headers: { 'X-CARGO-API-KEY': process.env.CARGO_API_KEY } }
+  );
+  return res.data;
+}
 ```
 
 Roadmap
@@ -276,7 +282,7 @@ Notes:
 
 Deployment (Docker Compose)
 
-Backend + Postgres + Cargo (from `backend/` directory):
+Backend + Postgres (from `backend/` directory):
 
 ```
 cp backend/.env.example backend/.env
@@ -297,14 +303,12 @@ Once services are up:
 
 Cargo service:
 
-- Exposed at `http://localhost:8000/graphql`
-- Env: `X_CARGO_API_KEY` (defaults to `dev-key` via compose)
+- Run and configure it from its external repository. Point `CARGO_URL` at your instance and set `CARGO_API_KEY` accordingly.
 
 Environment
 
 - Backend env template: `backend/.env.example`
-- Important variables: `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_NAME`, `JWT_SECRET`
-- Cargo env template: `cargo/.env.sample` (`X_CARGO_API_KEY`)
+- Important variables: `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_NAME`, `JWT_SECRET`, `CARGO_URL`, `CARGO_API_KEY`
 
 Developer checks (lint, build, format)
 
@@ -335,10 +339,6 @@ This repo uses GitHub Actions with split workflows per service and an optional m
 - Frontend CI: `.github/workflows/frontend.yml`
   - Jobs: lint (ESLint), build (Vite), SBOM (Syft), vulnerability scan (Grype → SARIF uploaded).
   - Runs on pushes/PRs that touch `frontend/**` or lock/workspace files.
-
-- Cargo Service CI: `.github/workflows/Cargo.yml`
-  - Jobs: lint (ruff), syntax check (py_compile), unit tests discovery, SBOM (Syft), vulnerability scan (Grype → SARIF uploaded).
-  - Runs on pushes/PRs that touch `Cargo/**`.
 
 - Monorepo CI (legacy): `.github/workflows/ci.yml`
   - Jobs: lint + build for frontend and backend. Kept for convenience; per‑service workflows are primary.
