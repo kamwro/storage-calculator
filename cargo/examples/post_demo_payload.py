@@ -6,8 +6,8 @@ from urllib import request
 
 
 def main():
-    base = os.environ.get("CARGO_PROCESSOR_URL", "http://localhost:8000")
-    service_key = os.environ.get("X_CARGO_PROCESSOR_API_KEY", "dev-key")
+    base = os.environ.get("CARGO_URL", "http://localhost:8000")
+    service_key = os.environ.get("X_CARGO_API_KEY", "dev-key")
     url = base.rstrip('/') + "/graphql"
 
     query = """
@@ -34,7 +34,7 @@ def main():
     body = json.dumps({"query": query, "variables": variables}).encode("utf-8")
     req = request.Request(url, data=body, method="POST", headers={
         "Content-Type": "application/json",
-        "X-CARGO-PROCESSOR-API-KEY": service_key,
+        "X-CARGO-API-KEY": service_key,
     })
     with request.urlopen(req, timeout=10) as resp:
         print(resp.read().decode("utf-8"))

@@ -40,14 +40,14 @@ services:
     networks:
       - storage-calculator
 
-  cargo-processor:
+  cargo:
     build:
       context: ..
-      dockerfile: ./python/Dockerfile
+      dockerfile: ../cargo/Dockerfile
     environment:
-      X_CARGO_PROCESSOR_API_KEY: ${X_CARGO_PROCESSOR_API_KEY:-dev-key}
+      X_CARGO_API_KEY: ${X_CARGO_API_KEY:-dev-key}
     ports:
-      - "${CARGO_PROCESSOR_PORT:-8000}:8000"
+      - "${CARGO_PORT:-8000}:8000"
     networks:
       - storage-calculator
 

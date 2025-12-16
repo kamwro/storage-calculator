@@ -1,6 +1,6 @@
 Project Overview
 
-This is a small monorepo that helps plan how items fit into storage containers under both weight and volume constraints. It exposes a simple REST API for auth, CRUD over entities, and a calculator that tries to allocate items to containers using pluggable strategies. A lightweight React frontend drives the APIs, and an optional Python GraphQL service can normalize external data before it’s pushed into the system.
+This is a small monorepo that helps plan how items fit into storage containers under both weight and volume constraints. It exposes a simple REST API for auth, CRUD over entities, and a calculator that tries to allocate items to containers using pluggable strategies. A lightweight React frontend drives the APIs, and an optional Cargo GraphQL service can normalize external data before it’s pushed into the system.
 
 Monorepo layout
 
@@ -10,18 +10,18 @@ Monorepo layout
   - DB migrations + seed script
 - Frontend (React + Vite + Tailwind): `frontend/`
   - Screens for auth, item types, containers + items, and the calculator
-- Python Cargo Processor (FastAPI + Strawberry GraphQL): `python/`
+- Cargo Cargo (FastAPI + Strawberry GraphQL): `Cargo/`
   - Optional service to ingest/normalize raw data into item types and items
 
 How pieces fit together
 
 - The frontend talks to the backend at `/api`.
 - The backend persists data in Postgres and exposes calculator logic.
-- Tools or backend (future) can call the Python service to normalize incoming data, then create item types/items via the backend API.
+- Tools or backend (future) can call the Cargo service to normalize incoming data, then create item types/items via the backend API.
 
 Quickstart (dev)
 
-1. Install prerequisites: Node 24.x, pnpm, Docker (for Postgres), Python 3.11+ (optional for the Python service).
+1. Install prerequisites: Node 24.x, pnpm, Docker (for Postgres), Cargo 3.11+ (optional for the Cargo service).
 2. Install deps: `pnpm install`
 3. Backend env: copy `backend/.env.example` → `backend/.env` and set DB\_\*, JWT_SECRET
 4. Start services:
@@ -145,9 +145,9 @@ Seed content:
 - Containers: A/B with `maxWeightKg`, `maxVolumeM3`
 - Items: few sample rows per container
 
-Seeding via Python helper (calls Backend HTTP API)
+Seeding via Cargo helper (calls Backend HTTP API)
 
-If you prefer to seed through the HTTP API (and verify auth + guards), use the Python helper:
+If you prefer to seed through the HTTP API (and verify auth + guards), use the Cargo helper:
 
 ```
 # Optionally set custom backend URL and credentials (admin by default)
@@ -155,7 +155,7 @@ set BACKEND_URL=http://localhost:3000/api
 set SEED_USERNAME=admin@example.com
 set SEED_PASSWORD=admin1234
 
-python ./scripts/seed.py
+Cargo ./scripts/seed.py
 ```
 
 Environment variables (with defaults):
@@ -193,9 +193,9 @@ Frontend and pagination
 - List endpoints now return a paginated object: `{ data, total, limit, offset }`.
 - The UI consumes the `data` array for tables and can wire pagination controls using `total`, `limit`, and `offset`.
 
-Python service (Cargo Processor)
+Cargo service (Cargo)
 
-I include a small Python service exposing a GraphQL mutation to ingest raw data and return normalized Item Types/Items. Tools (or the backend) authenticate via a service key header.
+I include a small Cargo service exposing a GraphQL mutation to ingest raw data and return normalized Item Types/Items. Tools (or the backend) authenticate via a service key header.
 
 GraphQL sketch:
 
@@ -208,26 +208,26 @@ type Mutation { normalize(source: String!, payload: JSON!): NormalizeResult! }
 
 Where to find it:
 
-- App: `python/main.py` (FastAPI + Strawberry GraphQL)
-- Env sample: `python/.env.sample` (set `X_CARGO_PROCESSOR_API_KEY`)
-- Dockerfile: `python/Dockerfile`
-- Example client: `python/examples/post_demo_payload.py`
+- App: `Cargo/main.py` (FastAPI + Strawberry GraphQL)
+- Env sample: `Cargo/.env.sample` (set `X_CARGO_API_KEY`)
+- Dockerfile: `Cargo/Dockerfile`
+- Example client: `Cargo/examples/post_demo_payload.py`
 
 Run locally (without Docker):
 
 ```
-cd python
+cd Cargo
 cp .env.sample .env
 pip install -r requirements.txt
-python -m uvicorn main:app --reload --port 8000
+Cargo -m uvicorn main:app --reload --port 8000
 ```
 
 Send a demo request:
 
 ```
-set CARGO_PROCESSOR_URL=http://localhost:8000
-set X_CARGO_PROCESSOR_API_KEY=dev-key
-python python/examples/post_demo_payload.py
+set CARGO_URL=http://localhost:8000
+set X_CARGO_API_KEY=dev-key
+Cargo Cargo/examples/post_demo_payload.py
 ```
 
 Roadmap
@@ -237,8 +237,8 @@ Roadmap
 - [ ] RBAC and auth polish (roles, guards), ownership scoping
 - [ ] Seed data + scripts and docs
 - [ ] Frontend wiring for Items, summary, calculator
-- [ ] Python GraphQL service + integration stub
-- [ ] Docker deployment for backend + Postgres (and later frontend + Python service)
+- [ ] Cargo GraphQL service + integration stub
+- [ ] Docker deployment for backend + Postgres (and later frontend + Cargo service)
 
 End-to-End Testing
 
@@ -276,7 +276,7 @@ Notes:
 
 Deployment (Docker Compose)
 
-Backend + Postgres + Cargo Processor (from `backend/` directory):
+Backend + Postgres + Cargo (from `backend/` directory):
 
 ```
 cp backend/.env.example backend/.env
@@ -295,16 +295,16 @@ Once services are up:
 - Run migrations (inside your dev shell): `pnpm --filter backend run migration:run`
 - Seed data: `pnpm --filter backend run seed` or `./scripts/seed.sh`
 
-Cargo Processor service:
+Cargo service:
 
 - Exposed at `http://localhost:8000/graphql`
-- Env: `X_CARGO_PROCESSOR_API_KEY` (defaults to `dev-key` via compose)
+- Env: `X_CARGO_API_KEY` (defaults to `dev-key` via compose)
 
 Environment
 
 - Backend env template: `backend/.env.example`
 - Important variables: `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASS`, `DB_NAME`, `JWT_SECRET`
-- Python env template: `python/.env.sample` (`X_CARGO_PROCESSOR_API_KEY`)
+- Cargo env template: `cargo/.env.sample` (`X_CARGO_API_KEY`)
 
 Developer checks (lint, build, format)
 
@@ -336,9 +336,9 @@ This repo uses GitHub Actions with split workflows per service and an optional m
   - Jobs: lint (ESLint), build (Vite), SBOM (Syft), vulnerability scan (Grype → SARIF uploaded).
   - Runs on pushes/PRs that touch `frontend/**` or lock/workspace files.
 
-- Python Service CI: `.github/workflows/python.yml`
+- Cargo Service CI: `.github/workflows/Cargo.yml`
   - Jobs: lint (ruff), syntax check (py_compile), unit tests discovery, SBOM (Syft), vulnerability scan (Grype → SARIF uploaded).
-  - Runs on pushes/PRs that touch `python/**`.
+  - Runs on pushes/PRs that touch `Cargo/**`.
 
 - Monorepo CI (legacy): `.github/workflows/ci.yml`
   - Jobs: lint + build for frontend and backend. Kept for convenience; per‑service workflows are primary.
@@ -359,7 +359,7 @@ ADRs
 - Frameworks and choices are documented in the `ADR/` folder:
   - Backend: NestJS (`ADR/0001_backend_framework_nestjs.md`)
   - Frontend: React + Vite + Tailwind (`ADR/0002_frontend_framework_react_vite_tailwind.md`)
-  - Python: FastAPI (`ADR/0003_python_framework_fastapi.md`)
+  - Cargo: FastAPI (`ADR/0003_Cargo_framework_fastapi.md`)
   - Strawberry GraphQL choice (`ADR/0004_strawberry_graphql_choice.md`)
   - RBAC & Ownership (`ADR/0004_rbac_ownership.md`)
   - Calculator strategies (`ADR/0002_calculator_strategies.md`)

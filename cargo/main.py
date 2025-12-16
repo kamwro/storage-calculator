@@ -5,15 +5,15 @@ from fastapi import FastAPI, Header, HTTPException
 from strawberry.fastapi import GraphQLRouter
 
 
-SERVICE_KEY_ENV = "X_CARGO_PROCESSOR_API_KEY"
+SERVICE_KEY_ENV = "X_CARGO_API_KEY"
 
 
-def ensure_service_key(x_cargo_processor_api_key: Optional[str]) -> None:
+def ensure_service_key(x_cargo_api_key: Optional[str]) -> None:
     expected = os.environ.get(SERVICE_KEY_ENV)
     if not expected:
         # If no expected key is set, allow all in dev, but warn via exception message when misused.
         return
-    if x_cargo_processor_api_key != expected:
+    if x_cargo_api_key != expected:
         raise HTTPException(status_code=401, detail="Invalid service key")
 
 
@@ -84,14 +84,14 @@ class Mutation:
 schema = strawberry.Schema(mutation=Mutation)
 
 
-async def auth_context_getter(x_cargo_processor_api_key: Optional[str] = Header(default=None)):
-    ensure_service_key(x_cargo_processor_api_key)
+async def auth_context_getter(x_cargo_api_key: Optional[str] = Header(default=None)):
+    ensure_service_key(x_cargo_api_key)
     return {}
 
 
 graphql_app = GraphQLRouter(schema, context_getter=auth_context_getter)
 
-app = FastAPI(title="Cargo Processor (GraphQL)")
+app = FastAPI(title="Cargo (GraphQL)")
 app.include_router(graphql_app, prefix="/graphql")
 
 
