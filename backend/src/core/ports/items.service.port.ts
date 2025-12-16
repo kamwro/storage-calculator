@@ -8,11 +8,7 @@ type AuthUser = AuthenticatedRequest['user'];
 
 export interface IItemsService {
   listByContainer(containerId: string, user: AuthUser): Promise<ItemEntity[]>;
-  listByContainer(
-    containerId: string,
-    q: PaginationQueryDto,
-    user: AuthUser,
-  ): Promise<PaginatedResponse<ItemEntity>>;
+  listByContainer(containerId: string, q: PaginationQueryDto, user: AuthUser): Promise<PaginatedResponse<ItemEntity>>;
   create(containerId: string, dto: CreateItemDto, user: AuthUser): Promise<ItemEntity>;
   update(id: string, dto: UpdateItemDto, user: AuthUser): Promise<ItemEntity>;
   remove(id: string, user: AuthUser): Promise<void>;

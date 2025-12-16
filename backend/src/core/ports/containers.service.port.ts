@@ -13,16 +13,17 @@ export interface IContainersService {
   create(dto: CreateContainerDto, user: AuthUser): Promise<ContainerEntity>;
   update(id: string, dto: UpdateContainerDto, user: AuthUser): Promise<ContainerEntity>;
   remove(id: string, user: AuthUser): Promise<void>;
-  calculate(id: string, user: AuthUser): Promise<
-    {
-      containerId: string;
-      totalWeightKg: number;
-      totalVolumeM3: number;
-      maxWeightKg: number;
-      maxVolumeM3: number;
-      utilization: { weightPct: number; volumePct: number };
-      weightExceeded: boolean;
-      volumeExceeded: boolean;
-    }
-  >;
+  calculate(
+    id: string,
+    user: AuthUser,
+  ): Promise<{
+    containerId: string;
+    totalWeightKg: number;
+    totalVolumeM3: number;
+    maxWeightKg: number;
+    maxVolumeM3: number;
+    utilization: { weightPct: number; volumePct: number };
+    weightExceeded: boolean;
+    volumeExceeded: boolean;
+  }>;
 }
