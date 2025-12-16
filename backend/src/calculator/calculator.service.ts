@@ -8,12 +8,13 @@ import type { AuthenticatedRequest } from '../shared/auth/types';
 import { EvaluateRequestDto } from './dto/evaluate.dto';
 import { strategyMap } from './strategies';
 import type { ContainerState } from './strategy.types';
+import type { ICalculatorService } from '../core/ports/calculator.service.port';
 type AuthUser = AuthenticatedRequest['user'];
 
 type AllocationItem = { itemTypeId: string; quantity: number };
 
 @Injectable()
-export class CalculatorService {
+export class CalculatorService implements ICalculatorService {
   constructor(
     @InjectRepository(ContainerEntity)
     private readonly containersRepo: Repository<ContainerEntity>,

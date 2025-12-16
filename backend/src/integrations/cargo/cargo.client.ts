@@ -1,26 +1,8 @@
 import { Injectable } from '@nestjs/common';
-
-export interface NormalizeResultItemTypeInput {
-  name: string;
-  unitWeightKg: number;
-  unitVolumeM3: number;
-  lengthM?: number;
-  widthM?: number;
-  heightM?: number;
-}
-
-export interface NormalizeResultItemInput {
-  itemTypeName: string;
-  quantity: number;
-}
-
-export interface NormalizeResult {
-  itemTypes: NormalizeResultItemTypeInput[];
-  items: NormalizeResultItemInput[];
-}
+import type { ICargoClient, NormalizeResult } from '../../core/ports/cargo.client.port';
 
 @Injectable()
-export class CargoClient {
+export class CargoClient implements ICargoClient {
   private readonly hasApiKey: boolean = !!process.env.CARGO_API_KEY;
   private readonly hasApiToken: boolean = !!process.env.CARGO_API_TOKEN;
 

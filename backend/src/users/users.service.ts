@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import type { IUsersService } from '../core/ports/users.service.port';
 import { UserEntity } from '../infra/postgres/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements IUsersService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly repo: Repository<UserEntity>,

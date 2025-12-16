@@ -6,12 +6,13 @@ import { CreateContainerDto } from './dto/create-container.dto';
 import { UpdateContainerDto } from './dto/update-container.dto';
 import { ItemEntity } from '../infra/postgres/entities/item.entity';
 import type { AuthenticatedRequest } from '../shared/auth/types';
+import type { IContainersService } from '../core/ports/containers.service.port';
 import { PaginationQueryDto, PaginatedResponse } from '../shared/dto/pagination.dto';
 import { buildOrder, toPaginatedResponse } from '../shared/pagination/pagination.util';
 type AuthUser = AuthenticatedRequest['user'];
 
 @Injectable()
-export class ContainersService {
+export class ContainersService implements IContainersService {
   constructor(
     @InjectRepository(ContainerEntity)
     private readonly containersRepo: Repository<ContainerEntity>,

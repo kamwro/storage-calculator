@@ -1,11 +1,12 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import type { IAuthService } from '../core/ports/auth.service.port';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
 @Injectable()
-export class AuthService {
+export class AuthService implements IAuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,

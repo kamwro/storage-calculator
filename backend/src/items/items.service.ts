@@ -9,10 +9,11 @@ import { UpdateItemDto } from './dto/update-item.dto';
 import type { AuthenticatedRequest } from '../shared/auth/types';
 import { PaginationQueryDto, PaginatedResponse } from '../shared/dto/pagination.dto';
 import { buildOrder, toPaginatedResponse } from '../shared/pagination/pagination.util';
+import type { IItemsService } from '../core/ports/items.service.port';
 type AuthUser = AuthenticatedRequest['user'];
 
 @Injectable()
-export class ItemsService {
+export class ItemsService implements IItemsService {
   constructor(
     @InjectRepository(ItemEntity)
     private readonly itemsRepo: Repository<ItemEntity>,

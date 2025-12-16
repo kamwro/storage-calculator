@@ -5,9 +5,10 @@ import { CreateItemTypeDto } from './dto/create-item-type.dto';
 import { ItemTypeEntity } from '../infra/postgres/entities/item-type.entity';
 import { PaginationQueryDto, PaginatedResponse } from '../shared/dto/pagination.dto';
 import { buildOrder, toPaginatedResponse } from '../shared/pagination/pagination.util';
+import type { IItemTypesService } from '../core/ports/item-types.service.port';
 
 @Injectable()
-export class ItemTypesService {
+export class ItemTypesService implements IItemTypesService {
   constructor(
     @InjectRepository(ItemTypeEntity)
     private readonly repo: Repository<ItemTypeEntity>,
