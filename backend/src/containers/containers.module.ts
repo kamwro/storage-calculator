@@ -7,10 +7,12 @@ import { ContainerEntity } from '../infra/postgres/entities/container.entity';
 import { ItemEntity } from '../infra/postgres/entities/item.entity';
 import { ItemTypeEntity } from '../infra/postgres/entities/item-type.entity';
 import { RolesGuard } from '../auth/roles.guard';
+import { CONTAINERS_SERVICE } from '../core/tokens';
 
 @Module({
   imports: [ItemTypesModule, TypeOrmModule.forFeature([ContainerEntity, ItemEntity, ItemTypeEntity])],
-  providers: [ContainersService, RolesGuard],
+  providers: [ContainersService, { provide: CONTAINERS_SERVICE, useExisting: ContainersService }, RolesGuard],
   controllers: [ContainersController],
+  exports: [ContainersService, CONTAINERS_SERVICE],
 })
 export class ContainersModule {}
