@@ -7,6 +7,12 @@ import { PaginationQueryDto, PaginatedResponse } from '../shared/dto/pagination.
 import { buildOrder, toPaginatedResponse } from '../shared/pagination/pagination.util';
 import type { IItemTypesService } from '../core/ports/item-types.service.port';
 
+/**
+ * ItemTypesService
+ *
+ * Provides listing and creation of item types which define unit weight/volume
+ * used when calculating container utilization and allocations.
+ */
 @Injectable()
 export class ItemTypesService implements IItemTypesService {
   constructor(

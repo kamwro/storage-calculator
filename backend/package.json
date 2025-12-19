@@ -2,7 +2,7 @@
   "name": "backend",
   "version": "0.0.1",
   "description": "Simple storage calculator backend",
-  "packageManager": "pnpm@10.26.0",
+  "packageManager": "pnpm@10.26.1",
   "engines": {
     "node": "^24.11.1"
   },
@@ -23,10 +23,12 @@
   "dependencies": {
     "@nestjs/common": "^11.1.9",
     "@nestjs/core": "^11.1.9",
+    "@nestjs/swagger": "^11.2.3",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.9",
     "@nestjs/typeorm": "^11.0.0",
+    "swagger-ui-express": "^5.0.1",
     "bcryptjs": "^3.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",

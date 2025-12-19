@@ -1,5 +1,9 @@
 import type { ContainerState, StrategyFn } from './strategy.types';
 
+/**
+ * First-Fit strategy: pick the first container that can accommodate one more unit
+ * of the requested item type without exceeding weight/volume limits.
+ */
 export const firstFit: StrategyFn<{
   maxWeightKg: number;
   maxVolumeM3: number;
@@ -16,6 +20,10 @@ export const firstFit: StrategyFn<{
   return undefined;
 };
 
+/**
+ * Best-Fit strategy: among containers that can still accept a unit, pick the one
+ * with the smallest remaining capacity (by worst of weight/volume) after placement.
+ */
 export const bestFit: StrategyFn<{
   maxWeightKg: number;
   maxVolumeM3: number;
@@ -39,9 +47,15 @@ export const bestFit: StrategyFn<{
   return best;
 };
 
+/**
+ * Map of supported strategy keys to their implementation functions.
+ */
 export const strategyMap = {
   first_fit: firstFit,
   best_fit: bestFit,
 };
 
+/**
+ * Type representing the `strategyMap` structure.
+ */
 export type StrategyMap = typeof strategyMap;

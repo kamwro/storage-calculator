@@ -11,6 +11,12 @@ import { PaginationQueryDto, PaginatedResponse } from '../shared/dto/pagination.
 import { buildOrder, toPaginatedResponse } from '../shared/pagination/pagination.util';
 type AuthUser = AuthenticatedRequest['user'];
 
+/**
+ * ContainersService
+ *
+ * Provides CRUD operations for containers and calculates utilization
+ * based on items within a container for a given user.
+ */
 @Injectable()
 export class ContainersService implements IContainersService {
   constructor(
@@ -20,7 +26,9 @@ export class ContainersService implements IContainersService {
     private readonly itemsRepo: Repository<ItemEntity>,
   ) {}
 
-  // Overloads to preserve backward compatibility with existing tests
+  /**
+   * List containers visible to the user. Overloaded to support optional pagination.
+   */
   async findAll(user: AuthUser): Promise<ContainerEntity[]>;
   async findAll(user: AuthUser, q: PaginationQueryDto): Promise<PaginatedResponse<ContainerEntity>>;
   async findAll(user: AuthUser, q?: PaginationQueryDto): Promise<ContainerEntity[] | PaginatedResponse<ContainerEntity>> {
@@ -38,6 +46,11 @@ export class ContainersService implements IContainersService {
     return toPaginatedResponse(data, total, q.offset ?? 0, q.limit ?? 20);
   }
 
+  /**
+   * Fetch a container by id; validates existence and optionally ownership (unless admin).
+   * @throws NotFoundException when container does not exist
+   * @throws ForbiddenException when user does not own the container
+   */
   async findOne(id: string, user?: AuthUser): Promise<ContainerEntity> {
     const container = await this.containersRepo.findOne({ where: { id } });
     if (!container) {
@@ -49,22 +62,34 @@ export class ContainersService implements IContainersService {
     return container;
   }
 
+  /**
+   * Create a container owned by the given user.
+   */
   async create(dto: CreateContainerDto, user: AuthUser): Promise<ContainerEntity> {
     const container = this.containersRepo.create({ ...dto, ownerId: user.id });
     return this.containersRepo.save(container);
   }
 
+  /**
+   * Update an existing container after ownership check.
+   */
   async update(id: string, dto: UpdateContainerDto, user: AuthUser): Promise<ContainerEntity> {
     const container = await this.findOne(id, user);
     Object.assign(container, dto);
     return this.containersRepo.save(container);
   }
 
+  /**
+   * Delete a container after ownership check.
+   */
   async remove(id: string, user: AuthUser): Promise<void> {
     const container = await this.findOne(id, user);
     await this.containersRepo.delete(container.id);
   }
 
+  /**
+   * Calculate utilization for a container based on its current items.
+   */
   async calculate(id: string, user: AuthUser) {
     const container = await this.findOne(id, user);
 

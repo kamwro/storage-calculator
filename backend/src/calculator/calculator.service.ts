@@ -13,6 +13,12 @@ type AuthUser = AuthenticatedRequest['user'];
 
 type AllocationItem = { itemTypeId: string; quantity: number };
 
+/**
+ * CalculatorService
+ *
+ * Implements evaluation of packing strategies, allocating requested items across
+ * selected containers and reporting utilization and unallocated leftovers.
+ */
 @Injectable()
 export class CalculatorService implements ICalculatorService {
   constructor(
@@ -22,6 +28,22 @@ export class CalculatorService implements ICalculatorService {
     private readonly itemTypesRepo: Repository<ItemTypeEntity>,
   ) {}
 
+  /**
+   * Evaluate allocation of requested items across the given containers using a selected strategy.
+   *
+   * Validation steps:
+   * - Ensures items and containers arrays are not empty
+   * - Verifies containers exist and are owned by the user (unless admin)
+   * - Verifies item types exist
+   *
+   * Strategy behavior:
+   * - `single_container_only`: attempts to place all items into a single container
+   * - `first_fit` / `best_fit`: places items unit-by-unit using the corresponding strategy function
+   *
+   * @param input Evaluation request DTO
+   * @param user Authenticated user context for authorization
+   * @returns Feasibility, per-container utilization, and any unallocated items
+   */
   async evaluate(input: EvaluateRequestDto, user: AuthUser) {
     if (!input.items?.length) throw new BadRequestException('items cannot be empty');
     if (!input.containers?.length) throw new BadRequestException('containers cannot be empty');
@@ -117,6 +139,9 @@ export class CalculatorService implements ICalculatorService {
     return this.buildResult(state, unallocated);
   }
 
+  /**
+   * Build the response shape from the internal state.
+   */
   private buildResult(
     state: { container: ContainerEntity; usedW: number; usedV: number; items: Map<string, number> }[],
     unallocated: AllocationItem[],

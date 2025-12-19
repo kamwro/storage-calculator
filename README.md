@@ -368,3 +368,13 @@ ADRs
 License
 
 MIT
+
+### API Docs (Swagger)
+
+After starting the backend, the OpenAPI (Swagger) UI is available at:
+
+http://localhost:3000/api/docs
+
+Notes:
+- The backend uses the global prefix `api`, so the docs are served under `/api/docs`.
+- For protected endpoints, click “Authorize” and paste the JWT token returned from `/api/auth/login` or `/api/auth/register`.

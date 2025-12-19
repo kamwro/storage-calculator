@@ -12,6 +12,12 @@ import { buildOrder, toPaginatedResponse } from '../shared/pagination/pagination
 import type { IItemsService } from '../core/ports/items.service.port';
 type AuthUser = AuthenticatedRequest['user'];
 
+/**
+ * ItemsService
+ *
+ * Manages CRUD operations for items inside containers, with access control
+ * checks and optional pagination helpers.
+ */
 @Injectable()
 export class ItemsService implements IItemsService {
   constructor(
@@ -23,7 +29,9 @@ export class ItemsService implements IItemsService {
     private readonly itemTypesRepo: Repository<ItemTypeEntity>,
   ) {}
 
-  // Overloads to preserve backward compatibility with existing tests
+  /**
+   * List items in a container. Overloaded to support optional pagination.
+   */
   async listByContainer(containerId: string, user: AuthUser): Promise<ItemEntity[]>;
   async listByContainer(
     containerId: string,
@@ -48,6 +56,11 @@ export class ItemsService implements IItemsService {
     return toPaginatedResponse(data, total, q.offset ?? 0, q.limit ?? 20);
   }
 
+  /**
+   * Create a new item inside the specified container after access check.
+   * @throws NotFoundException when container or item type does not exist
+   * @throws ForbiddenException when user does not own the container
+   */
   async create(containerId: string, dto: CreateItemDto, user: AuthUser): Promise<ItemEntity> {
     const container = await this.ensureContainer(containerId, user);
     const itemType = await this.ensureItemType(dto.itemTypeId);
@@ -60,6 +73,11 @@ export class ItemsService implements IItemsService {
     return this.itemsRepo.save(item);
   }
 
+  /**
+   * Update an existing item, optionally changing its type/quantity/note.
+   * @throws NotFoundException when item or new item type does not exist
+   * @throws ForbiddenException when user does not own the container
+   */
   async update(id: string, dto: UpdateItemDto, user: AuthUser): Promise<ItemEntity> {
     const item = await this.itemsRepo.findOne({ where: { id }, relations: ['container'] });
     if (!item) throw new NotFoundException('Item not found');
@@ -73,6 +91,9 @@ export class ItemsService implements IItemsService {
     return this.itemsRepo.save(item);
   }
 
+  /**
+   * Remove an item after verifying container ownership.
+   */
   async remove(id: string, user: AuthUser): Promise<void> {
     const item = await this.itemsRepo.findOne({ where: { id }, relations: ['container'] });
     if (!item) return;
@@ -80,6 +101,9 @@ export class ItemsService implements IItemsService {
     await this.itemsRepo.delete(id);
   }
 
+  /**
+   * Ensure the container exists and is visible to the user.
+   */
   private async ensureContainer(id: string, user: AuthUser): Promise<ContainerEntity> {
     const container = await this.containersRepo.findOne({ where: { id } });
     if (!container) throw new NotFoundException('Container not found');
@@ -89,6 +113,9 @@ export class ItemsService implements IItemsService {
     return container;
   }
 
+  /**
+   * Ensure the item type exists.
+   */
   private async ensureItemType(id: string): Promise<ItemTypeEntity> {
     const itemType = await this.itemTypesRepo.findOne({ where: { id } });
     if (!itemType) throw new NotFoundException('Item type not found');

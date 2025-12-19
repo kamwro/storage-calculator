@@ -6,6 +6,12 @@ import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 
+/**
+ * AuthService
+ *
+ * Provides user registration and authentication using JWT tokens
+ * and simple username/password credentials managed by UsersService.
+ */
 @Injectable()
 export class AuthService implements IAuthService {
   constructor(
@@ -13,6 +19,11 @@ export class AuthService implements IAuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  /**
+   * Register a new user and issue a JWT.
+   * - Throws ConflictException if the username is already taken.
+   * @param dto Registration payload
+   */
   async register(dto: RegisterDto) {
     const existing = await this.usersService.findByName(dto.username);
     if (existing) {
@@ -24,6 +35,11 @@ export class AuthService implements IAuthService {
     return { token, user };
   }
 
+  /**
+   * Authenticate an existing user by username and password.
+   * - Throws UnauthorizedException on invalid credentials.
+   * @param dto Login payload
+   */
   async login(dto: LoginDto) {
     const user = await this.usersService.validateUserByName(dto.username, dto.password);
     if (!user) {
@@ -34,6 +50,9 @@ export class AuthService implements IAuthService {
     return { token, user };
   }
 
+  /**
+   * Return the JWT user payload as-is (used by /auth/me).
+   */
   me(user: { id: string; username: string; role: 'admin' | 'user' }) {
     return user;
   }

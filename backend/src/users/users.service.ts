@@ -5,6 +5,11 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 
+/**
+ * UsersService
+ *
+ * Handles persistence and basic credential verification for users.
+ */
 @Injectable()
 export class UsersService implements IUsersService {
   constructor(
