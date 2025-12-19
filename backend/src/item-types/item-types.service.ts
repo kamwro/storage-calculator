@@ -20,6 +20,9 @@ export class ItemTypesService implements IItemTypesService {
     private readonly repo: Repository<ItemTypeEntity>,
   ) {}
 
+  /**
+   * List item types with pagination and optional sorting.
+   */
   async findAll(q: PaginationQueryDto): Promise<PaginatedResponse<ItemTypeEntity>> {
     const order = buildOrder<ItemTypeEntity>(['name', 'unitWeightKg', 'unitVolumeM3', 'id'], q.sort, q.dir);
     const [data, total] = await this.repo.findAndCount({
@@ -30,11 +33,18 @@ export class ItemTypesService implements IItemTypesService {
     return toPaginatedResponse(data, total, q.offset ?? 0, q.limit ?? 20);
   }
 
+  /**
+   * Create a new item type.
+   */
   async create(dto: CreateItemTypeDto): Promise<ItemTypeEntity> {
     const item = this.repo.create(dto);
     return this.repo.save(item);
   }
 
+  /**
+   * Retrieve a single item type by id.
+   * @throws NotFoundException when the item type does not exist
+   */
   async findById(id: string): Promise<ItemTypeEntity> {
     const item = await this.repo.findOne({ where: { id } });
     if (!item) throw new NotFoundException('Item type not found');
