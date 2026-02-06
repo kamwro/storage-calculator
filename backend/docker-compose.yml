@@ -1,5 +1,5 @@
 services:
-  backend:
+  api:
     build:
       context: ..
       dockerfile: ./backend/Dockerfile
@@ -17,9 +17,9 @@ services:
       PORT: 3000
       DB_HOST: db
       DB_PORT: 5432
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USERNAME:-postgres}
+      DB_PASS: ${DB_PASSWORD:-password}
+      DB_NAME: ${DB_NAME:-storage_calculator}
     networks:
       - storage-calculator
 
@@ -27,9 +27,9 @@ services:
     container_name: db
     image: postgres:18.1-bookworm
     environment:
-      POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-storage_calculator}
+      POSTGRES_USER: ${DB_PASSWORD:-postgres}
     ports:
       - "${DB_PORT:-5432}:5432"
     healthcheck:

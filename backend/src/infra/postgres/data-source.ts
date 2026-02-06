@@ -1,5 +1,18 @@
 import 'reflect-metadata';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Load .env file
+const envPath = path.resolve(__dirname, '../../../.env');
+const result = dotenv.config({ path: envPath });
+if (result.error) {
+  console.warn('Failed to load .env from:', envPath, result.error);
+  // Try loading from current working directory as fallback
+  dotenv.config();
+} else {
+  console.log('Loaded .env from:', envPath);
+}
 
 const dbType = (process.env.DB_TYPE || 'postgres').toLowerCase();
 
@@ -24,9 +37,9 @@ if (dbType === 'sqlite') {
     type: 'postgres',
     host: process.env.DB_HOST ?? 'localhost',
     port: Number(process.env.DB_PORT ?? 5432),
-    username: process.env.DB_USER ?? 'postgres',
-    password: process.env.DB_PASS ?? 'postgres',
-    database: process.env.DB_NAME ?? 'backend',
+    username: process.env.DB_USERNAME ?? 'postgres',
+    password: process.env.DB_PASSWORD ?? 'postgres',
+    database: process.env.DB_DATABASE ?? 'backend',
     entities: [__dirname + '/entities/*.{ts,js}'],
     migrations: [__dirname + '/migrations/*.{ts,js}'],
     synchronize: false,
