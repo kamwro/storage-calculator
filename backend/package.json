@@ -2,7 +2,6 @@
   "name": "backend",
   "version": "0.0.1",
   "description": "Simple storage calculator backend",
-  "packageManager": "pnpm@10.28.0",
   "engines": {
     "node": "^24.11.1"
   },
