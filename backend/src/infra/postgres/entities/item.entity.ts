@@ -16,6 +16,6 @@ export class ItemEntity {
   @Column('float')
   quantity: number;
 
-  @Column({ nullable: true })
+  @Column('text', { nullable: true })
   note?: string | null;
 }
