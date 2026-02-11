@@ -15,7 +15,7 @@
     "deps:update:minor": "ncu -u --target minor && pnpm install"
   },
   "dependencies": {
-    "axios": "^1.13.4",
+    "axios": "^1.13.5",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
