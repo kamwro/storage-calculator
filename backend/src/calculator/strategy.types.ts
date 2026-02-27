@@ -1,7 +1,7 @@
 /**
  * Allowed allocation strategy keys.
  */
-export type StrategyKey = 'first_fit' | 'best_fit' | 'single_container_only';
+export type StrategyKey = 'first_fit' | 'best_fit' | 'best_fit_decreasing' | 'bfd' | 'single_container_only';
 
 /**
  * Mutable working state maintained per container during evaluation.

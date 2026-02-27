@@ -78,4 +78,60 @@ describe('CalculatorService (access control + basics)', () => {
     expect(result.feasible).toBe(true);
     expect(result.byContainer.some((r) => r.containerId === 'c2')).toBe(true);
   });
+
+  it('supports best_fit_decreasing (bfd) and returns unallocated when an item cannot fit', async () => {
+    const big: ItemType = { id: 't2', name: 'Big', unitWeightKg: 200, unitVolumeM3: 2 };
+    itemTypesRepo._data = [t1, big];
+    const result = await service.evaluate(
+      {
+        items: [
+          { itemTypeId: 't1', quantity: 1 },
+          { itemTypeId: 't2', quantity: 1 },
+        ],
+        containers: ['c1'],
+        strategy: 'bfd',
+      },
+      { id: 'admin1', username: 'admin', role: 'admin' },
+    );
+    expect(result.feasible).toBe(false);
+    expect(result.unallocated).toEqual([{ itemTypeId: 't2', quantity: 1 }]);
+  });
+
+  it('best_fit_decreasing changes results vs best_fit when item order matters', async () => {
+    const cA: Container = { id: 'cA', name: 'A', maxWeightKg: 10, maxVolumeM3: 1.0, ownerId: 'u1' };
+    const cB: Container = { id: 'cB', name: 'B', maxWeightKg: 100, maxVolumeM3: 0.95, ownerId: 'u1' };
+    containersRepo._data = [cA, cB];
+
+    const small: ItemType = { id: 's', name: 'Small', unitWeightKg: 1, unitVolumeM3: 0.9 };
+    const large: ItemType = { id: 'l', name: 'Large', unitWeightKg: 9, unitVolumeM3: 1.0 };
+    itemTypesRepo._data = [small, large];
+
+    const bestFitResult = await service.evaluate(
+      {
+        items: [
+          { itemTypeId: 's', quantity: 1 },
+          { itemTypeId: 'l', quantity: 1 },
+        ],
+        containers: ['cA', 'cB'],
+        strategy: 'best_fit',
+      },
+      { id: 'admin1', username: 'admin', role: 'admin' },
+    );
+    expect(bestFitResult.feasible).toBe(false);
+    expect(bestFitResult.unallocated).toEqual([{ itemTypeId: 'l', quantity: 1 }]);
+
+    const bfdResult = await service.evaluate(
+      {
+        items: [
+          { itemTypeId: 's', quantity: 1 },
+          { itemTypeId: 'l', quantity: 1 },
+        ],
+        containers: ['cA', 'cB'],
+        strategy: 'best_fit_decreasing',
+      },
+      { id: 'admin1', username: 'admin', role: 'admin' },
+    );
+    expect(bfdResult.feasible).toBe(true);
+    expect(bfdResult.unallocated).toEqual([]);
+  });
 });

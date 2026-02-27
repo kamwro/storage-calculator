@@ -38,7 +38,8 @@ export class CalculatorService implements ICalculatorService {
    *
    * Strategy behavior:
    * - `single_container_only`: attempts to place all items into a single container
-   * - `first_fit` / `best_fit`: places items unit-by-unit using the corresponding strategy function
+   * - `first_fit` / `best_fit` / `best_fit_decreasing` (or `bfd`):
+   *   places items unit-by-unit using the corresponding strategy function
    *
    * @param input Evaluation request DTO
    * @param user Authenticated user context for authorization
@@ -73,9 +74,10 @@ export class CalculatorService implements ICalculatorService {
     }));
 
     // Clone items demand
-    const remaining: AllocationItem[] = input.items.map((i) => ({
+    const remaining: (AllocationItem & { _index: number })[] = input.items.map((i, idx) => ({
       itemTypeId: i.itemTypeId,
       quantity: Math.floor(i.quantity),
+      _index: idx,
     }));
 
     const placeUnit = (typeId: string, s: (typeof state)[number]) => {
@@ -119,12 +121,31 @@ export class CalculatorService implements ICalculatorService {
       return this.buildResult(state, remaining);
     }
 
+    if (input.strategy === 'best_fit_decreasing' || input.strategy === 'bfd') {
+      const sortKey = (typeId: string) => {
+        const t = typeMap.get(typeId);
+        if (!t) return { volume: 0, maxDim: 0, weight: 0 };
+        const volume = t.unitVolumeM3 ?? 0;
+        const maxDim = Math.max(t.lengthM ?? 0, t.widthM ?? 0, t.heightM ?? 0);
+        const weight = t.unitWeightKg ?? 0;
+        return { volume, maxDim, weight };
+      };
+      remaining.sort((a, b) => {
+        const ak = sortKey(a.itemTypeId);
+        const bk = sortKey(b.itemTypeId);
+        if (ak.volume !== bk.volume) return bk.volume - ak.volume;
+        if (ak.maxDim !== bk.maxDim) return bk.maxDim - ak.maxDim;
+        if (ak.weight !== bk.weight) return bk.weight - ak.weight;
+        return a._index - b._index;
+      });
+    }
+
     // For other strategies, allocate unit-by-unit for simplicity and determinism in demo
     for (const dem of remaining) {
       let q = dem.quantity;
       if (q <= 0) continue;
       while (q > 0) {
-        const pickFn = strategyMap[input.strategy as 'first_fit' | 'best_fit'];
+        const pickFn = strategyMap[input.strategy as 'first_fit' | 'best_fit' | 'best_fit_decreasing' | 'bfd'];
         const pick = pickFn
           ? (pickFn({ state, typeMap, typeId: dem.itemTypeId }) as (typeof state)[number] | undefined)
           : undefined;

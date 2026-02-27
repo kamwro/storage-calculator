@@ -6,7 +6,7 @@ Monorepo layout
 
 - Backend (NestJS + TypeORM + Postgres): `backend/`
   - Auth (JWT), Users, Item Types, Containers, Items
-  - Calculator endpoint implementing `first_fit`, `best_fit`, and `single_container_only`
+  - Calculator endpoint implementing `first_fit`, `best_fit`, `best_fit_decreasing`, and `single_container_only`
   - DB migrations + seed script
 - Frontend (React + Vite + Tailwind): `frontend/`
   - Screens for auth, item types, containers + items, and the calculator
@@ -78,7 +78,7 @@ Request:
 {
   "items": [ { "itemTypeId": "uuid", "quantity": 12 } ],
   "containers": [ "container-uuid-1", "container-uuid-2" ],
-  "strategy": "first_fit" | "best_fit" | "single_container_only"
+  "strategy": "first_fit" | "best_fit" | "best_fit_decreasing" | "bfd" | "single_container_only"
 }
 ```
 
@@ -105,6 +105,7 @@ Calculator strategies and limits
 - Limits: up to 100 items and 100 containers per request (demo safeguard).
 - `first_fit`: items are allocated unit‑by‑unit to the first container that can fit the next unit by both weight and volume. Fast, simple, not optimal.
 - `best_fit` (combined score): for each unit, pick the container that minimizes the maximum of the remaining capacity ratios for weight and volume after a hypothetical placement. Lower score is better; this tends to balance weight and volume utilization.
+- `best_fit_decreasing` (`bfd`): sorts items by size (volume desc, then max dimension desc, then weight desc) and then applies best-fit per unit. This often improves packing quality vs plain best_fit for mixed item sizes.
 - `single_container_only`: succeed only if the entire set fits into one container.
 
 Example of `best_fit` combined scoring

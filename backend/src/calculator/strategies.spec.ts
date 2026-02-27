@@ -1,4 +1,4 @@
-import { bestFit, firstFit } from './strategies';
+import { bestFit, bestFitDecreasing, firstFit } from './strategies';
 import type { ContainerState } from './strategy.types';
 
 describe('calculator strategies', () => {
@@ -70,5 +70,14 @@ describe('calculator strategies', () => {
     ]);
     expect(firstFit({ state, typeMap, typeId: 'light' })).toBeUndefined();
     expect(bestFit({ state, typeMap, typeId: 'light' })).toBeUndefined();
+  });
+
+  it('best_fit_decreasing breaks ties by pre-placement fullness then creation order', () => {
+    const state = makeState([
+      { container: { maxWeightKg: 10, maxVolumeM3: 1.0 }, usedW: 4, usedV: 0.4 },
+      { container: { maxWeightKg: 5, maxVolumeM3: 0.5 }, usedW: 3, usedV: 0.15 },
+    ]);
+    const pickLight = bestFitDecreasing({ state, typeMap, typeId: 'light' });
+    expect(pickLight).toBe(state[0]);
   });
 });

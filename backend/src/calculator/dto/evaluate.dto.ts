@@ -43,8 +43,9 @@ export class EvaluateRequestDto {
   containers: string[];
 
   /**
-   * Allocation strategy key to use: `first_fit`, `best_fit`, or `single_container_only`.
+   * Allocation strategy key to use: `first_fit`, `best_fit`, `best_fit_decreasing` (or `bfd`),
+   * or `single_container_only`.
    */
-  @IsIn(['first_fit', 'best_fit', 'single_container_only'])
-  strategy: 'first_fit' | 'best_fit' | 'single_container_only';
+  @IsIn(['first_fit', 'best_fit', 'best_fit_decreasing', 'bfd', 'single_container_only'])
+  strategy: 'first_fit' | 'best_fit' | 'best_fit_decreasing' | 'bfd' | 'single_container_only';
 }
