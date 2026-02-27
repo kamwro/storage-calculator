@@ -13,7 +13,9 @@ type DraftItem = { itemTypeId: string; quantity: number };
 
 const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
   const [items, setItems] = useState<DraftItem[]>([]);
-  const [strategy, setStrategy] = useState<'first_fit' | 'best_fit' | 'single_container_only'>('best_fit');
+  const [strategy, setStrategy] = useState<'first_fit' | 'best_fit' | 'best_fit_decreasing' | 'single_container_only'>(
+    'best_fit',
+  );
   const [selectedContainers, setSelectedContainers] = useState<string[]>([]);
   const [result, setResult] = useState<any | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -134,6 +136,7 @@ const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
         <select className="border rounded px-2 py-1" value={strategy} onChange={(e) => setStrategy(e.target.value as any)}>
           <option value="first_fit">first_fit</option>
           <option value="best_fit">best_fit</option>
+          <option value="best_fit_decreasing">best_fit_decreasing</option>
           <option value="single_container_only">single_container_only</option>
         </select>
         <button
