@@ -76,11 +76,24 @@ jobs:
           name: frontend-sbom
           path: sbom-frontend.spdx.json
       - name: Scan with Grype
+        id: grype-scan
         uses: anchore/scan-action@v4
         with:
           path: ./frontend
           fail-build: false
           output-format: sarif
+      - name: Verify SARIF exists
+        run: |
+          if [ ! -s results.sarif ]; then
+            # Grype might name it differently by default, let's check
+            if [ -f scan-results.sarif ]; then
+              mv scan-results.sarif results.sarif
+            else
+              echo "No SARIF file found (tried results.sarif and scan-results.sarif)"
+              ls -R .
+              exit 1
+            fi
+          fi
       - name: Upload SARIF to code scanning
         uses: github/codeql-action/upload-sarif@v4
         with:
