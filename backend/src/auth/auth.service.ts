@@ -1,4 +1,4 @@
-import { Inject, Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import type { IAuthService } from '../core/ports/auth.service.port';
 import type { IUsersService } from '../core/ports/users.service.port';
 import { USERS_SERVICE } from '../core/tokens';
