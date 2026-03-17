@@ -5,6 +5,7 @@ import { USERS_SERVICE } from '../core/tokens';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { CreateUserUseCase } from '../core/use-cases/create-user.use-case';
 
 /**
  * AuthService
@@ -17,19 +18,19 @@ export class AuthService implements IAuthService {
   constructor(
     @Inject(USERS_SERVICE) private readonly usersService: IUsersService,
     private readonly jwtService: JwtService,
+    private readonly createUserUseCase: CreateUserUseCase,
   ) {}
 
   /**
    * Register a new user and issue a JWT.
-   * - Throws ConflictException if the username is already taken.
    * @param dto Registration payload
    */
   async register(dto: RegisterDto) {
-    const existing = await this.usersService.findByName(dto.username);
-    if (existing) {
-      throw new ConflictException('Username already exists');
-    }
-    const user = await this.usersService.create(dto.username, dto.password, 'user');
+    const user = await this.createUserUseCase.execute({
+      username: dto.username,
+      password: dto.password,
+    });
+
     const payload = { sub: user.id, username: user.name, role: user.role } as const;
     const token = this.jwtService.sign(payload);
     return { token, user };
