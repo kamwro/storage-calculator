@@ -7,6 +7,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import type { AuthenticatedRequest } from '../shared/auth/types';
 import { PaginationQueryDto } from '../shared/dto/pagination.dto';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CalculateContainerUtilizationUseCase } from '../core/use-cases/calculate-container-utilization.use-case';
 
 /**
  * ContainersController
@@ -18,7 +19,10 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags }
 @ApiTags('Containers')
 @ApiBearerAuth()
 export class ContainersController {
-  constructor(private readonly containersService: ContainersService) {}
+  constructor(
+    private readonly containersService: ContainersService,
+    private readonly calculateContainerUtilizationUseCase: CalculateContainerUtilizationUseCase,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List containers for current user (paginated)' })
@@ -62,13 +66,13 @@ export class ContainersController {
   @ApiOperation({ summary: 'Calculate container utilization from its items' })
   @ApiParam({ name: 'id', type: String })
   async calculate(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
-    return this.containersService.calculate(id, req.user);
+    return this.calculateContainerUtilizationUseCase.execute(id, req.user);
   }
 
   @Get(':id/summary')
   @ApiOperation({ summary: 'Get summarized utilization for a container' })
   @ApiParam({ name: 'id', type: String })
   async summary(@Param('id', ParseUUIDPipe) id: string, @Req() req: AuthenticatedRequest) {
-    return this.containersService.calculate(id, req.user);
+    return this.calculateContainerUtilizationUseCase.execute(id, req.user);
   }
 }

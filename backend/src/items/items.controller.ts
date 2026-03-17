@@ -7,6 +7,8 @@ import { RolesGuard } from '../auth/roles.guard';
 import type { AuthenticatedRequest } from '../shared/auth/types';
 import { PaginationQueryDto } from '../shared/dto/pagination.dto';
 import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { AddItemToContainerUseCase } from '../core/use-cases/add-item-to-container.use-case';
+import { UpdateItemInContainerUseCase } from '../core/use-cases/update-item-in-container.use-case';
 
 /**
  * ItemsController
@@ -18,7 +20,11 @@ import { ApiBearerAuth, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestj
 @ApiTags('Items')
 @ApiBearerAuth()
 export class ItemsController {
-  constructor(private readonly itemsService: ItemsService) {}
+  constructor(
+    private readonly itemsService: ItemsService,
+    private readonly addItemToContainerUseCase: AddItemToContainerUseCase,
+    private readonly updateItemInContainerUseCase: UpdateItemInContainerUseCase,
+  ) {}
 
   @Get('containers/:containerId/items')
   @ApiOperation({ summary: 'List items in a specific container (paginated)' })
@@ -43,14 +49,14 @@ export class ItemsController {
     @Body() dto: CreateItemDto,
     @Req() req: AuthenticatedRequest,
   ) {
-    return this.itemsService.create(containerId, dto, req.user);
+    return this.addItemToContainerUseCase.execute(containerId, dto, req.user);
   }
 
   @Patch('items/:id')
   @ApiOperation({ summary: 'Update an existing item' })
   @ApiParam({ name: 'id', type: String })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateItemDto, @Req() req: AuthenticatedRequest) {
-    return this.itemsService.update(id, dto, req.user);
+    return this.updateItemInContainerUseCase.execute(id, dto, req.user);
   }
 
   @Delete('items/:id')
