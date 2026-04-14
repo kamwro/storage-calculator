@@ -99,7 +99,7 @@ jobs:
           path: ./backend
           fail-build: false
           output-format: sarif
-          # For Node projects, scanning the directory (lockfile) gives useful results
+          # For Node projects, scanning the directory   (lockfile) gives useful results
       - name: Verify SARIF exists
         run: |
           if [ ! -s results.sarif ]; then
