@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import api from '../api';
-
-type ItemType = { id: string; name: string; unitWeightKg: number; unitVolumeM3: number };
-type Container = { id: string; name: string; maxWeightKg: number; maxVolumeM3: number };
+import type { ItemType, Container, CalculatorRequest, CalculatorResult } from '../types';
 
 type Props = {
   itemTypes: ItemType[];
@@ -13,11 +11,9 @@ type DraftItem = { itemTypeId: string; quantity: number };
 
 const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
   const [items, setItems] = useState<DraftItem[]>([]);
-  const [strategy, setStrategy] = useState<'first_fit' | 'best_fit' | 'best_fit_decreasing' | 'single_container_only'>(
-    'best_fit',
-  );
+  const [strategy, setStrategy] = useState<CalculatorRequest['strategy']>('best_fit');
   const [selectedContainers, setSelectedContainers] = useState<string[]>([]);
-  const [result, setResult] = useState<any | null>(null);
+  const [result, setResult] = useState<CalculatorResult | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   const canRun = items.length > 0 && selectedContainers.length > 0;
@@ -33,13 +29,13 @@ const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
     setErr(null);
     setResult(null);
     try {
-      const payload = {
+      const payload: CalculatorRequest = {
         items: items.map((i) => ({ itemTypeId: i.itemTypeId, quantity: Number(i.quantity) })),
         containers: selectedContainers,
         strategy,
       };
       const res = await api.post('/calculator/evaluate', payload);
-      setResult(res.data);
+      setResult(res.data as CalculatorResult);
     } catch (e: any) {
       setErr(e?.message ?? 'Failed to evaluate');
     }
@@ -133,7 +129,7 @@ const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
 
       <div className="flex items-center gap-3">
         <label className="text-sm text-gray-700">Strategy</label>
-        <select className="border rounded px-2 py-1" value={strategy} onChange={(e) => setStrategy(e.target.value as any)}>
+        <select className="border rounded px-2 py-1" value={strategy} onChange={(e) => setStrategy(e.target.value as CalculatorRequest['strategy'])}>
           <option value="first_fit">first_fit</option>
           <option value="best_fit">best_fit</option>
           <option value="best_fit_decreasing">best_fit_decreasing</option>
@@ -153,7 +149,7 @@ const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
         <div className="space-y-2">
           <h3 className="font-semibold">Result {result.feasible ? '— Feasible' : '— Partially allocated'}</h3>
           <div className="space-y-3">
-            {result.byContainer.map((bc: any) => (
+            {result.byContainer.map((bc) => (
               <div key={bc.containerId} className="border rounded p-2 text-sm">
                 <div>
                   Total Weight: {bc.totalWeightKg.toFixed(3)} kg; Total Volume: {bc.totalVolumeM3.toFixed(3)} m³
@@ -163,14 +159,14 @@ const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
                   {(bc.utilization.volumePct * 100).toFixed(1)}%
                 </div>
                 <div className="mt-1">
-                  Items: {bc.items.map((it: any) => `${it.itemTypeId.slice(0, 8)}…×${it.quantity}`).join(', ') || '—'}
+                  Items: {bc.items.map((it) => `${it.itemTypeId.slice(0, 8)}…×${it.quantity}`).join(', ') || '—'}
                 </div>
               </div>
             ))}
           </div>
           {result.unallocated?.length ? (
             <div className="text-sm text-gray-700">
-              Unallocated: {result.unallocated.map((u: any) => `${u.itemTypeId.slice(0, 8)}…×${u.quantity}`).join(', ')}
+              Unallocated: {result.unallocated.map((u) => `${u.itemTypeId.slice(0, 8)}…×${u.quantity}`).join(', ')}
             </div>
           ) : (
             <div className="text-sm text-green-700">All items allocated.</div>
