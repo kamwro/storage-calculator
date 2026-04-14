@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import api from '../api';
-
-type ItemType = { id: string; name: string; unitWeightKg: number; unitVolumeM3: number };
-type Item = { id: string; quantity: number; note?: string | null; itemType: ItemType };
+import type { Item, ItemType, ContainerSummary, CreateItemPayload } from '../types';
+import ErrorBanner from './ErrorBanner';
+import FormField from './FormField';
 
 const SummaryRow = ({ label, value, unit }: { label: string; value: number; unit?: string }) => (
   <div className="flex justify-between text-sm">
@@ -24,23 +25,15 @@ export default function ContainerDetail({
   onChanged?: () => void;
 }) {
   const [items, setItems] = useState<Item[]>([]);
-  const [summary, setSummary] = useState<{
-    containerId: string;
-    totalWeightKg: number;
-    totalVolumeM3: number;
-    maxWeightKg: number;
-    maxVolumeM3: number;
-    utilization?: { weightPct: number; volumePct: number };
-    weightExceeded: boolean;
-    volumeExceeded: boolean;
-  } | null>(null);
-  const [form, setForm] = useState<{ itemTypeId: string; quantity: number; note?: string }>({
-    itemTypeId: '',
-    quantity: 1,
-  });
-  const [error, setError] = useState<string | null>(null);
+  const [summary, setSummary] = useState<ContainerSummary | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const typesMap = useMemo(() => new Map(itemTypes.map((t) => [t.id, t])), [itemTypes]);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<CreateItemPayload>({ defaultValues: { quantity: 1 } });
 
   const load = async () => {
     const [itemsRes, sumRes] = await Promise.all([
@@ -55,20 +48,19 @@ export default function ContainerDetail({
     load();
   }, [id]);
 
-  const addItem = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const onAddItem = async (data: CreateItemPayload) => {
+    setServerError(null);
     try {
       await api.post(`/containers/${id}/items`, {
-        itemTypeId: form.itemTypeId,
-        quantity: Number(form.quantity),
-        note: form.note || undefined,
+        itemTypeId: data.itemTypeId,
+        quantity: Number(data.quantity),
+        note: data.note || undefined,
       });
-      setForm({ itemTypeId: '', quantity: 1 });
+      reset({ quantity: 1 });
       await load();
       onChanged?.();
-    } catch (e: any) {
-      setError(e?.message ?? 'Failed to add item');
+    } catch (e: unknown) {
+      setServerError(e instanceof Error ? e.message : 'Failed to add item');
     }
   };
 
@@ -132,13 +124,11 @@ export default function ContainerDetail({
         </table>
       </div>
 
-      <form onSubmit={addItem} className="flex flex-wrap gap-2 items-end">
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-600">Item Type</label>
+      <form onSubmit={handleSubmit(onAddItem)} className="flex flex-wrap gap-2 items-end">
+        <FormField label="Item Type" error={errors.itemTypeId?.message}>
           <select
             className="border rounded px-2 py-1 min-w-40"
-            value={form.itemTypeId}
-            onChange={(e) => setForm((f) => ({ ...f, itemTypeId: e.target.value }))}
+            {...register('itemTypeId', { required: 'Select an item type' })}
           >
             <option value="">Select…</option>
             {itemTypes.map((t) => (
@@ -147,31 +137,34 @@ export default function ContainerDetail({
               </option>
             ))}
           </select>
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-600">Quantity</label>
+        </FormField>
+        <FormField label="Quantity" error={errors.quantity?.message}>
           <input
             className="border rounded px-2 py-1 w-24 text-right"
             type="number"
-            min={0}
-            value={form.quantity}
-            onChange={(e) => setForm((f) => ({ ...f, quantity: Number(e.target.value) }))}
+            {...register('quantity', {
+              valueAsNumber: true,
+              required: 'Required',
+              min: { value: 1, message: 'Must be ≥ 1' },
+            })}
           />
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-600">Note</label>
+        </FormField>
+        <FormField label="Note">
           <input
             className="border rounded px-2 py-1"
             placeholder="Optional note"
-            value={form.note ?? ''}
-            onChange={(e) => setForm((f) => ({ ...f, note: e.target.value }))}
+            {...register('note')}
           />
-        </div>
-        <button type="submit" className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">
-          Add Item
+        </FormField>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? 'Adding…' : 'Add Item'}
         </button>
-        {error && <span className="text-red-600 text-sm">{error}</span>}
       </form>
+      <ErrorBanner message={serverError} />
 
       {summary && (
         <div className="border rounded p-3">

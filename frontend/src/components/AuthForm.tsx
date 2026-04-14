@@ -1,57 +1,83 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import api, { setToken } from '../api';
+import ErrorBanner from './ErrorBanner';
+import FormField from './FormField';
+
+type AuthFormData = { username: string; password: string };
 
 const AuthForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [err, setErr] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErr(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<AuthFormData>();
 
+  const onSubmit = async (data: AuthFormData) => {
+    setServerError(null);
     try {
-      const res = await api.post(`/auth/${mode}`, { username, password });
-      const token = res.data.token;
-
-      localStorage.setItem('token', token);
-      setToken(token);
+      const res = await api.post(`/auth/${mode}`, data);
+      localStorage.setItem('token', res.data.token);
+      setToken(res.data.token);
       onSuccess();
-    } catch (e: any) {
-      setErr(e?.message ?? 'Error');
+    } catch (e: unknown) {
+      setServerError(e instanceof Error ? e.message : 'Error');
     }
   };
 
+  const switchMode = () => {
+    setMode(mode === 'login' ? 'register' : 'login');
+    setServerError(null);
+    reset();
+  };
+
   return (
-    <div style={{ maxWidth: 350, margin: '2rem auto' }}>
-      <h3>{mode === 'login' ? 'Login' : 'Register'}</h3>
+    <div className="max-w-sm space-y-4">
+      <h3 className="text-lg font-semibold">{mode === 'login' ? 'Login' : 'Register'}</h3>
 
-      <form onSubmit={submit}>
-        <input
-          style={{ width: '100%', marginBottom: '0.5rem' }}
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        <FormField label="Username" error={errors.username?.message}>
+          <input
+            className="border rounded px-2 py-1 w-full"
+            placeholder="Username"
+            {...register('username', { required: 'Username is required' })}
+          />
+        </FormField>
 
-        <input
-          style={{ width: '100%', marginBottom: '0.5rem' }}
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <FormField label="Password" error={errors.password?.message}>
+          <input
+            className="border rounded px-2 py-1 w-full"
+            type="password"
+            placeholder="Password"
+            {...register('password', {
+              required: 'Password is required',
+              minLength: { value: 3, message: 'Minimum 3 characters' },
+            })}
+          />
+        </FormField>
 
-        {err && <p style={{ color: 'red' }}>{err}</p>}
+        <ErrorBanner message={serverError} />
 
-        <button type="submit" style={{ marginRight: '0.5rem' }}>
-          {mode === 'login' ? 'Login' : 'Register'}
-        </button>
-
-        <button type="button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')}>
-          Switch to {mode === 'login' ? 'Register' : 'Login'}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="px-4 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? 'Please wait…' : mode === 'login' ? 'Login' : 'Register'}
+          </button>
+          <button
+            type="button"
+            className="px-4 py-1.5 rounded border hover:bg-gray-50"
+            onClick={switchMode}
+          >
+            Switch to {mode === 'login' ? 'Register' : 'Login'}
+          </button>
+        </div>
       </form>
     </div>
   );

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import api from '../api';
-
-type Container = { id: string; name: string; maxWeightKg: number; maxVolumeM3: number };
+import type { Container, CreateContainerPayload } from '../types';
+import ErrorBanner from './ErrorBanner';
+import FormField from './FormField';
 
 type Props = {
   containers: Container[];
@@ -10,26 +12,23 @@ type Props = {
 };
 
 const ContainersList: React.FC<Props> = ({ containers, onSelect, onCreated }) => {
-  const [name, setName] = useState('');
-  const [maxWeightKg, setMaxWeightKg] = useState<number | ''>('');
-  const [maxVolumeM3, setMaxVolumeM3] = useState<number | ''>('');
-  const [err, setErr] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const create = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErr(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<CreateContainerPayload>();
+
+  const onSubmit = async (data: CreateContainerPayload) => {
+    setServerError(null);
     try {
-      await api.post('/containers', {
-        name,
-        maxWeightKg: Number(maxWeightKg || 0),
-        maxVolumeM3: Number(maxVolumeM3 || 0),
-      });
-      setName('');
-      setMaxWeightKg('');
-      setMaxVolumeM3('');
+      await api.post('/containers', data);
+      reset();
       onCreated?.();
-    } catch (e: any) {
-      setErr(e?.message ?? 'Error creating container');
+    } catch (e: unknown) {
+      setServerError(e instanceof Error ? e.message : 'Error creating container');
     }
   };
 
@@ -50,41 +49,47 @@ const ContainersList: React.FC<Props> = ({ containers, onSelect, onCreated }) =>
         {containers.length === 0 && <li className="py-2 text-sm text-gray-500">No containers yet.</li>}
       </ul>
 
-      <form onSubmit={create} className="flex flex-wrap gap-2 items-end">
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-600">Name</label>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-wrap gap-2 items-end">
+        <FormField label="Name" error={errors.name?.message}>
           <input
             className="border rounded px-2 py-1"
             placeholder="Container A"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            {...register('name', { required: 'Name is required' })}
           />
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-600">Max Weight (kg)</label>
+        </FormField>
+        <FormField label="Max Weight (kg)" error={errors.maxWeightKg?.message}>
           <input
             className="border rounded px-2 py-1"
             type="number"
             step="0.1"
-            value={maxWeightKg}
-            onChange={(e) => setMaxWeightKg(e.target.value === '' ? '' : Number(e.target.value))}
+            {...register('maxWeightKg', {
+              valueAsNumber: true,
+              required: 'Required',
+              min: { value: 0, message: 'Must be ≥ 0' },
+            })}
           />
-        </div>
-        <div className="flex flex-col">
-          <label className="text-xs text-gray-600">Max Volume (m³)</label>
+        </FormField>
+        <FormField label="Max Volume (m³)" error={errors.maxVolumeM3?.message}>
           <input
             className="border rounded px-2 py-1"
             type="number"
             step="0.01"
-            value={maxVolumeM3}
-            onChange={(e) => setMaxVolumeM3(e.target.value === '' ? '' : Number(e.target.value))}
+            {...register('maxVolumeM3', {
+              valueAsNumber: true,
+              required: 'Required',
+              min: { value: 0, message: 'Must be ≥ 0' },
+            })}
           />
-        </div>
-        <button type="submit" className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700">
-          Create
+        </FormField>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? 'Creating…' : 'Create'}
         </button>
-        {err && <span className="text-red-600 text-sm">{err}</span>}
       </form>
+      <ErrorBanner message={serverError} />
     </div>
   );
 };

@@ -6,27 +6,41 @@ import Header from './components/Header';
 import ContainersList from './components/ContainersList';
 import ContainerDetail from './components/ContainerDetail';
 import CalculatorPanel from './components/CalculatorPanel';
+import { useFetch } from './hooks/useFetch';
+import type { Container, ItemType, User } from './types';
 
 const App = () => {
   const [auth, setAuth] = useState(false);
-  const [user, setUser] = useState<{ username: string; role: 'admin' | 'user' } | null>(null);
-  const [containers, setContainers] = useState<any[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [selectedContainerId, setSelectedContainerId] = useState<string | null>(null);
-  const [itemTypes, setItemTypes] = useState<any[]>([]);
+
+  const {
+    data: containers,
+    loading: containersLoading,
+    refetch: refetchContainers,
+  } = useFetch<Container[]>('/containers', { skip: !auth });
+
+  const {
+    data: itemTypes,
+    loading: itemTypesLoading,
+    refetch: refetchItemTypes,
+  } = useFetch<ItemType[]>('/item-types', { skip: !auth });
 
   useEffect(() => {
     const t = localStorage.getItem('token');
     if (t) {
       setToken(t);
       setAuth(true);
-      api
-        .get('/auth/me')
-        .then((res) => setUser(res.data))
-        .catch(() => setUser(null));
-      api.get('/item-types').then((res) => setItemTypes(res.data?.data ?? res.data));
-      api.get('/containers').then((res) => setContainers(res.data?.data ?? res.data));
     }
   }, []);
+
+  useEffect(() => {
+    if (!auth) return;
+    api
+      .get('/auth/me')
+      .then((res) => setUser(res.data))
+      .catch(() => setUser(null));
+  }, [auth]);
 
   if (!auth) {
     return (
@@ -39,9 +53,8 @@ const App = () => {
               const me = await api.get('/auth/me');
               setUser(me.data);
             } catch {}
-            const [its, cs] = await Promise.all([api.get('/item-types'), api.get('/containers')]);
-            setItemTypes(its.data?.data ?? its.data);
-            setContainers(cs.data?.data ?? cs.data);
+            refetchItemTypes();
+            refetchContainers();
           }}
         />
       </div>
@@ -63,24 +76,27 @@ const App = () => {
       <section className="grid md:grid-cols-2 gap-6">
         <div className="border rounded p-4">
           <h2 className="text-lg font-semibold mb-3">Item Types</h2>
-          <ItemTypesManager
-            canCreate={user?.role === 'admin'}
-            onCreated={async () => {
-              const res = await api.get('/item-types');
-              setItemTypes(res.data?.data ?? res.data);
-            }}
-          />
+          {itemTypesLoading ? (
+            <p className="text-sm text-gray-500">Loading…</p>
+          ) : (
+            <ItemTypesManager
+              itemTypes={itemTypes ?? []}
+              canCreate={user?.role === 'admin'}
+              onCreated={refetchItemTypes}
+            />
+          )}
         </div>
         <div className="border rounded p-4">
           <h2 className="text-lg font-semibold mb-3">Containers</h2>
-          <ContainersList
-            containers={containers}
-            onSelect={(id) => setSelectedContainerId(id)}
-            onCreated={async () => {
-              const res = await api.get('/containers');
-              setContainers(res.data?.data ?? res.data);
-            }}
-          />
+          {containersLoading ? (
+            <p className="text-sm text-gray-500">Loading…</p>
+          ) : (
+            <ContainersList
+              containers={containers ?? []}
+              onSelect={(id) => setSelectedContainerId(id)}
+              onCreated={refetchContainers}
+            />
+          )}
         </div>
       </section>
 
@@ -90,12 +106,8 @@ const App = () => {
           {selectedContainerId ? (
             <ContainerDetail
               id={selectedContainerId}
-              itemTypes={itemTypes}
-              onChanged={async () => {
-                // refresh containers to reflect potential changes
-                const res = await api.get('/containers');
-                setContainers(res.data);
-              }}
+              itemTypes={itemTypes ?? []}
+              onChanged={refetchContainers}
             />
           ) : (
             <p className="text-sm text-gray-600">Select a container to view details.</p>
@@ -103,7 +115,7 @@ const App = () => {
         </div>
         <div className="border rounded p-4">
           <h2 className="text-lg font-semibold mb-3">Calculator</h2>
-          <CalculatorPanel itemTypes={itemTypes} containers={containers} />
+          <CalculatorPanel itemTypes={itemTypes ?? []} containers={containers ?? []} />
         </div>
       </section>
     </div>
