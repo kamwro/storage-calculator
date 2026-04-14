@@ -70,11 +70,7 @@ const AuthForm = ({ onSuccess }: { onSuccess: () => void }) => {
           >
             {isSubmitting ? 'Please wait…' : mode === 'login' ? 'Login' : 'Register'}
           </button>
-          <button
-            type="button"
-            className="px-4 py-1.5 rounded border hover:bg-gray-50"
-            onClick={switchMode}
-          >
+          <button type="button" className="px-4 py-1.5 rounded border hover:bg-gray-50" onClick={switchMode}>
             Switch to {mode === 'login' ? 'Register' : 'Login'}
           </button>
         </div>

@@ -150,11 +150,7 @@ export default function ContainerDetail({
           />
         </FormField>
         <FormField label="Note">
-          <input
-            className="border rounded px-2 py-1"
-            placeholder="Optional note"
-            {...register('note')}
-          />
+          <input className="border rounded px-2 py-1" placeholder="Optional note" {...register('note')} />
         </FormField>
         <button
           type="submit"

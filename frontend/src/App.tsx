@@ -104,11 +104,7 @@ const App = () => {
         <div className="border rounded p-4">
           <h2 className="text-lg font-semibold mb-3">Container Detail</h2>
           {selectedContainerId ? (
-            <ContainerDetail
-              id={selectedContainerId}
-              itemTypes={itemTypes ?? []}
-              onChanged={refetchContainers}
-            />
+            <ContainerDetail id={selectedContainerId} itemTypes={itemTypes ?? []} onChanged={refetchContainers} />
           ) : (
             <p className="text-sm text-gray-600">Select a container to view details.</p>
           )}

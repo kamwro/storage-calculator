@@ -129,7 +129,11 @@ const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
 
       <div className="flex items-center gap-3">
         <label className="text-sm text-gray-700">Strategy</label>
-        <select className="border rounded px-2 py-1" value={strategy} onChange={(e) => setStrategy(e.target.value as CalculatorRequest['strategy'])}>
+        <select
+          className="border rounded px-2 py-1"
+          value={strategy}
+          onChange={(e) => setStrategy(e.target.value as CalculatorRequest['strategy'])}
+        >
           <option value="first_fit">first_fit</option>
           <option value="best_fit">best_fit</option>
           <option value="best_fit_decreasing">best_fit_decreasing</option>

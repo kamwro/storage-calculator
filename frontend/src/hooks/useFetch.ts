@@ -33,10 +33,13 @@ export function useFetch<T>(url: string, options: UseFetchOptions = {}): UseFetc
     }
   };
 
-  useEffect(() => {
-    if (skip) return;
-    fetchData();
-  }, deps !== undefined ? [...deps, skip] : [url, skip]);
+  useEffect(
+    () => {
+      if (skip) return;
+      fetchData();
+    },
+    deps !== undefined ? [...deps, skip] : [url, skip],
+  );
 
   return { data, loading, error, refetch: fetchData };
 }
