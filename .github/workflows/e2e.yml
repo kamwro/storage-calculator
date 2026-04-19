@@ -60,7 +60,7 @@ jobs:
       - name: Install Playwright (browsers)
         run: npx playwright install --with-deps
 
-      - name: Run E2E tests (api + ui)
+      - name: Run configured E2E tests
         env:
           API_BASE_URL: ${{ github.event.inputs.apiBaseUrl || 'http://localhost:3000/api' }}
           UI_BASE_URL: ${{ github.event.inputs.uiBaseUrl || 'http://localhost:5173' }}
