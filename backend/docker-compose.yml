@@ -5,8 +5,6 @@ services:
       dockerfile: ./backend/Dockerfile
     ports:
       - "${PORT:-3000}:3000"
-    volumes:
-      - .:/usr/src/app
     depends_on:
       db:
         condition: service_healthy
