@@ -29,6 +29,14 @@ def _req(method: str, path: str, token: str | None = None, body: dict | None = N
         raise
 
 
+def _unwrap_collection(payload):
+    if isinstance(payload, dict) and isinstance(payload.get("data"), list):
+        return payload["data"]
+    if isinstance(payload, list):
+        return payload
+    raise RuntimeError(f"Expected list or paginated payload, got: {type(payload).__name__}")
+
+
 def login(username: str, password: str) -> str:
     payload = {"username": username, "password": password}
     res = _req("POST", "/auth/login", body=payload)
@@ -40,7 +48,7 @@ def login(username: str, password: str) -> str:
 
 def ensure_item_types(token: str):
     # Public GET
-    existing = _req("GET", "/item-types", token=None)
+    existing = _unwrap_collection(_req("GET", "/item-types", token=None))
     names = {it["name"] for it in existing}
     created = []
     def create(dto):
@@ -61,12 +69,12 @@ def ensure_item_types(token: str):
                 # Non-admin or already exists — ignore
                 pass
     # Refresh
-    all_types = _req("GET", "/item-types", token=None)
+    all_types = _unwrap_collection(_req("GET", "/item-types", token=None))
     return {it["name"]: it for it in all_types}
 
 
 def create_containers(token: str):
-    res = _req("GET", "/containers", token=token)
+    res = _unwrap_collection(_req("GET", "/containers", token=token))
     by_name = {c["name"]: c for c in res}
     want = [
         {"name": "Container A", "maxWeightKg": 200, "maxVolumeM3": 2.5},
