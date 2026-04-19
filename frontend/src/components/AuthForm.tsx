@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import api, { setToken } from '../api';
 import ErrorBanner from './ErrorBanner';
@@ -55,7 +55,7 @@ const AuthForm = ({ onSuccess }: { onSuccess: () => void }) => {
             placeholder="Password"
             {...register('password', {
               required: 'Password is required',
-              minLength: { value: 3, message: 'Minimum 3 characters' },
+              minLength: { value: 4, message: 'Minimum 4 characters' },
             })}
           />
         </FormField>
