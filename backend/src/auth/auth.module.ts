@@ -11,9 +11,11 @@ import { AUTH_SERVICE } from '../core/tokens';
   imports: [
     UsersModule,
     PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'super-secret-key-change-me',
-      signOptions: { expiresIn: '7d' },
+    JwtModule.registerAsync({
+      useFactory: () => ({
+        secret: process.env.JWT_SECRET || 'super-secret-key-change-me',
+        signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any },
+      }),
     }),
   ],
   providers: [AuthService, { provide: AUTH_SERVICE, useExisting: AuthService }, JwtStrategy],

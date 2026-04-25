@@ -14,11 +14,11 @@ async function seed() {
   const itemsRepo: Repository<ItemEntity> = AppDataSource.getRepository(ItemEntity);
   const usersRepo: Repository<UserEntity> = AppDataSource.getRepository(UserEntity);
 
-  // Clear existing (dev only)
-  await itemsRepo.delete({});
-  await containersRepo.delete({});
-  await itemTypesRepo.delete({});
-  await usersRepo.delete({});
+  // Clear existing (dev only) — delete({}) is disallowed by TypeORM, use QB instead
+  await itemsRepo.createQueryBuilder().delete().execute();
+  await containersRepo.createQueryBuilder().delete().execute();
+  await itemTypesRepo.createQueryBuilder().delete().execute();
+  await usersRepo.createQueryBuilder().delete().execute();
 
   // Users (bcrypt hashed passwords, roles)
   const admin = usersRepo.create({
