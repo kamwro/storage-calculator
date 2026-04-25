@@ -1,12 +1,11 @@
-import React from 'react';
-import { setToken } from '../api';
+'use client';
 
 type Props = {
   user?: { username: string; role: 'admin' | 'user' } | null;
   onLogout: () => void;
 };
 
-const Header: React.FC<Props> = ({ user, onLogout }) => {
+const Header = ({ user, onLogout }: Props) => {
   return (
     <header className="flex items-center justify-between py-4">
       <h1 className="text-2xl font-semibold text-blue-700">Storage Calculator</h1>
@@ -16,14 +15,7 @@ const Header: React.FC<Props> = ({ user, onLogout }) => {
             {user.username} · <span className="uppercase font-medium">{user.role}</span>
           </span>
         )}
-        <button
-          className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
-          onClick={() => {
-            setToken(null);
-            localStorage.removeItem('token');
-            onLogout();
-          }}
-        >
+        <button className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700" onClick={onLogout}>
           Logout
         </button>
       </div>

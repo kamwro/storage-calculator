@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+'use client';
+
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import api from '../api';
-import type { Container, CreateContainerPayload } from '../types';
+
+import api from '@/lib/api';
+import type { Container, CreateContainerPayload } from '@/types';
+
 import ErrorBanner from './ErrorBanner';
 import FormField from './FormField';
 
@@ -11,7 +15,7 @@ type Props = {
   onCreated?: () => void;
 };
 
-const ContainersList: React.FC<Props> = ({ containers, onSelect, onCreated }) => {
+const ContainersList = ({ containers, onSelect, onCreated }: Props) => {
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {

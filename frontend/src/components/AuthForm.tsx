@@ -1,6 +1,10 @@
+'use client';
+
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import api, { setToken } from '../api';
+
+import api, { setToken } from '@/lib/api';
+
 import ErrorBanner from './ErrorBanner';
 import FormField from './FormField';
 

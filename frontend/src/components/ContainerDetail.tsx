@@ -1,7 +1,11 @@
-import React, { useEffect, useState } from 'react';
+'use client';
+
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import api from '../api';
-import type { Item, ItemType, ContainerSummary, CreateItemPayload } from '../types';
+
+import api from '@/lib/api';
+import type { ContainerSummary, CreateItemPayload, Item, ItemType } from '@/types';
+
 import ErrorBanner from './ErrorBanner';
 import FormField from './FormField';
 

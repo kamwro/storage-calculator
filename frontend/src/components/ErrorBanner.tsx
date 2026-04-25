@@ -1,4 +1,4 @@
-import React from 'react';
+'use client';
 
 export default function ErrorBanner({ message }: { message: string | null | undefined }) {
   if (!message) return null;

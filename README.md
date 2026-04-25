@@ -1,11 +1,24 @@
 # Storage Calculator
 
-Small monorepo for planning how item types fit into storage containers under weight and volume constraints.
+TypeScript/NestJS + React monorepo for planning how item types fit into storage containers under
+weight and volume constraints. Built as a portfolio project demonstrating full-stack TypeScript
+architecture, clean design patterns, and production-grade CI/CD practices.
+
+## What This Project Demonstrates
+
+- **Modular NestJS architecture** — clean module boundaries, DI, DTOs, global validation pipe, Swagger docs
+- **JWT/RBAC authentication** — Passport JWT strategy, `@Roles` decorator, ownership-scoped queries
+- **Strategy Pattern** — bin-packing heuristics (`first_fit`, `best_fit`, `best_fit_decreasing`) as typed functions behind a `strategyMap` dispatch; adding a strategy requires editing one file
+- **Clean architecture lite** — service interfaces (ports) in `core/ports/`, business logic in `core/use-cases/`, DI tokens separating contract from implementation
+- **Next.js 15 App Router** — file-based routing (`/login`, `/dashboard`), `next.config.ts` API rewrites proxying to NestJS, all components Client Components (interactive/stateful app)
+- **pnpm workspaces monorepo** — shared tooling, independent builds, root-level scripts for lint/build/test/format
+- **Playwright E2E tests** — full API surface covered (auth, CRUD, RBAC, calculator) using SQLite in-memory isolation
+- **GitHub Actions CI** — per-service lint → build → unit test pipelines; SBOM generation (Syft/SPDX) and vulnerability scanning (Grype → SARIF → GitHub Code Scanning) on every push
 
 It includes:
 
 - A NestJS backend with JWT auth, CRUD APIs, and packing strategy evaluation
-- A React + Vite frontend for auth, item types, containers, and calculator flows
+- A Next.js 15 (App Router) + React 19 frontend with file-based routing, all pages as Client Components
 - Playwright API E2E tests
 - Optional integration points for an external Cargo normalization service
 
@@ -14,16 +27,27 @@ It includes:
 - `backend/`
   - NestJS + TypeORM
   - Postgres in normal dev/prod flows
-  - Optional SQLite in-memory mode for manual E2E workflow
+  - Optional SQLite in-memory mode for E2E / CI
+  - Notable sub-directories:
+    - `src/calculator/` — Strategy Pattern implementation (strategies.ts + strategyMap)
+    - `src/core/ports/` — service interfaces (clean architecture boundaries)
+    - `src/core/use-cases/` — business logic classes independent of infrastructure
+    - `src/infra/postgres/` — TypeORM entities, migrations, DataSource
+    - `src/shared/http/` — global error filter normalising all responses
 - `frontend/`
-  - React + Vite + Tailwind
+  - Next.js 15 (App Router) + React 19 + TailwindCSS 4
+  - Routes: `/` → `/dashboard` (redirect), `/login`, `/dashboard`
+  - `src/lib/api.ts` — Axios instance with auth + error interceptors
+  - `src/hooks/useFetch.ts` — generic typed data-fetching hook
+  - `src/types.ts` — shared domain types
+  - `next.config.ts` — API rewrites (`/api/*` → NestJS backend)
 - `e2e/`
-  - Playwright API specs
+  - Playwright API specs (auth, containers, items, item-types, calculator, RBAC)
   - UI project scaffold only for now
 - `scripts/`
   - Seed helpers
 - `ADR/`
-  - Architecture decision records
+  - Architecture decision records (framework choices, auth model, CI tooling)
 
 ## Quickstart
 
@@ -201,19 +225,21 @@ Defaults:
 
 ## Frontend
 
-The UI reads `VITE_API_BASE_URL` and defaults to `/api`.
+In development, the Next.js dev server proxies `/api/*` to the backend via `next.config.ts` rewrites.
+No extra env config is needed for local development.
 
-Example:
+For deployments where frontend and backend are on separate origins, set:
 
 ```bash
-# frontend/.env
-VITE_API_BASE_URL=http://localhost:3000/api
+# frontend/.env.local
+NEXT_PUBLIC_API_BASE_URL=https://api.example.com/api
 ```
 
 Notes:
 
 - JWT is stored in `localStorage`
-- API errors are normalized in `frontend/src/api.ts`
+- API errors are normalized in `frontend/src/lib/api.ts`
+- Unauthenticated requests redirect to `/login` via `router.replace`
 - The UI unwraps paginated responses by reading `response.data.data ?? response.data`
 
 ## Testing
@@ -310,15 +336,19 @@ pnpm install
 
 GitHub Actions workflows:
 
-- `backend.yml`
-  - lint, build, unit tests, SBOM, scan
-- `frontend.yml`
-  - lint, build, SBOM, scan
-- `e2e.yml`
-  - manual workflow
-  - uses SQLite in-memory for the backend
-  - builds backend/frontend
-  - runs configured Playwright projects
+- `backend.yml` — triggered on push/PR to main
+  - lint → build → unit tests → SBOM (Syft/SPDX) → Grype vulnerability scan → upload SARIF to GitHub Code Scanning
+- `frontend.yml` — triggered on push/PR to main
+  - lint → build → SBOM (Syft/SPDX) → Grype vulnerability scan → upload SARIF
+- `e2e.yml` — triggered manually via `workflow_dispatch`
+  - configures backend with SQLite in-memory (no external database dependency)
+  - builds and starts both services, waits for readiness
+  - runs all Playwright projects and uploads artifacts
+
+The E2E workflow is intentionally manual: API E2E specs write into the backend database, so
+they need a clean, isolated DB (SQLite in-memory). Running them on every push would require
+either a dedicated test DB or Docker service containers; the current design favours simplicity
+for a demo project.
 
 ## ADRs
 

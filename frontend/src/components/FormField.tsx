@@ -1,4 +1,4 @@
-import React from 'react';
+'use client';
 
 type Props = {
   label: string;
@@ -6,7 +6,7 @@ type Props = {
   children: React.ReactNode;
 };
 
-const FormField: React.FC<Props> = ({ label, error, children }) => (
+const FormField = ({ label, error, children }: Props) => (
   <div className="flex flex-col gap-1">
     <label className="text-xs text-gray-600">{label}</label>
     {children}

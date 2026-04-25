@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
-import api from '../api';
-import type { ItemType, Container, CalculatorRequest, CalculatorResult } from '../types';
+'use client';
+
+import { useState } from 'react';
+
+import api from '@/lib/api';
+import type { CalculatorRequest, CalculatorResult, Container, ItemType } from '@/types';
 
 type Props = {
   itemTypes: ItemType[];
@@ -9,7 +12,7 @@ type Props = {
 
 type DraftItem = { itemTypeId: string; quantity: number };
 
-const CalculatorPanel: React.FC<Props> = ({ itemTypes, containers }) => {
+const CalculatorPanel = ({ itemTypes, containers }: Props) => {
   const [items, setItems] = useState<DraftItem[]>([]);
   const [strategy, setStrategy] = useState<CalculatorRequest['strategy']>('best_fit');
   const [selectedContainers, setSelectedContainers] = useState<string[]>([]);

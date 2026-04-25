@@ -37,6 +37,12 @@ playwright-report/
 .temp
 .tmp
 
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/.env.local
+frontend/.env*.local
+
 # IDE/editor
 .idea/
 .vscode/

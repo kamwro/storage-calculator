@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+'use client';
+
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import api from '../api';
-import type { ItemType, CreateItemTypePayload } from '../types';
+
+import api from '@/lib/api';
+import type { CreateItemTypePayload, ItemType } from '@/types';
+
 import ErrorBanner from './ErrorBanner';
 import FormField from './FormField';
 
@@ -11,7 +15,7 @@ type Props = {
   canCreate?: boolean;
 };
 
-const ItemTypesManager: React.FC<Props> = ({ itemTypes, onCreated, canCreate }) => {
+const ItemTypesManager = ({ itemTypes, onCreated, canCreate }: Props) => {
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {

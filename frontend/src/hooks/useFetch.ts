@@ -1,5 +1,8 @@
+'use client';
+
 import { useEffect, useState, type DependencyList } from 'react';
-import api from '../api';
+
+import api from '@/lib/api';
 
 export type UseFetchOptions = {
   deps?: DependencyList;
