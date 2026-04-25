@@ -5,7 +5,7 @@
 **Storage Calculator** is a full-stack application for optimizing item storage across multiple containers using bin-packing algorithms.
 
 - **Backend**: NestJS + PostgreSQL + REST API
-- **Frontend**: React 19 + Vite + TailwindCSS 4
+- **Frontend**: Next.js 15 (App Router) + React 19 + TailwindCSS 4
 - **Auth**: JWT-based RBAC (admin/user roles)
 - **Key feature**: Calculator service with multiple packing strategies
 
@@ -15,27 +15,33 @@
 
 ### Frontend Architecture
 
-**State Management**: Centralized in `App.tsx`
+**Framework**: Next.js 15 App Router
 
-- No Redux/Zustand currently (app is simple enough)
-- Root component manages: `auth`, `user`, `containers`, `itemTypes`, `selectedContainerId`
-- Child components use props + callbacks (`onCreated`, `onChanged`)
-- This will evolve with custom hooks and Context API as features grow
+- All pages and components are Client Components (`'use client'`) — the app is interactive/stateful throughout
+- File-based routing: `/` → redirect to `/dashboard`; `/login` → auth form; `/dashboard` → main app
+- `next.config.ts` rewrites `/api/:path*` to the NestJS backend (replaces Vite proxy)
+- Path alias `@/` maps to `src/` for clean imports
+
+**State Management**: Centralized in `src/app/dashboard/page.tsx`
+
+- No Redux/Zustand — app state is simple (user, containers, itemTypes, selectedContainerId)
+- Dashboard page manages all remote state; child components use props + callbacks
+- Auth state managed via `localStorage` JWT + `router.replace('/login')` on logout/401
 
 **API Layer**:
 
-- Centralized `api.ts`: Axios instance with interceptors
+- `src/lib/api.ts`: Axios instance with interceptors
 - **Auth interceptor**: Adds Bearer token to all requests
-- **Error interceptor**: Normalizes errors, clears token on 401
-- No data caching (currently refetch after mutations)
-- **Response pattern**: `res.data?.data ?? res.data` (backend returns `{ data: [...] }` or bare array)
+- **Error interceptor**: Normalizes errors, clears token and redirects on 401
+- No data caching (refetch after mutations)
+- **Response pattern**: `res.data?.data ?? res.data` (backend returns `{ data: [...] }` or bare object)
 
 **Type System**:
 
 - TypeScript strict mode
-- Types defined per-component inline (being consolidated in Phase 1)
-- No `any` types allowed (goal: eliminate over time)
-- Goal: Infer types from backend API documentation or generate via OpenAPI
+- Shared types in `src/types.ts`
+- No `any` types (except legacy `e: any` in catch blocks pending cleanup)
+- Path alias `@/*` → `./src/*` (configured in `tsconfig.json` + `next.config.ts` is TS-native)
 
 ### Backend Architecture
 
@@ -122,18 +128,19 @@
 
 ### Current Frontend Stack
 
-- **react** ^19.2.4 – UI library
-- **react-dom** ^19.2.4 – React rendering
-- **axios** ^1.13.5 – HTTP client
-- **vite** ^7.3.1 – Build tool
-- **tailwindcss** ^4.2.1 – Styling
-- **typescript** ^5.9.3 – Type safety
+- **next** ^15.3.0 – App Router framework (SSR-capable, file-based routing)
+- **react** ^19.2.5 – UI library
+- **react-dom** ^19.2.5 – React rendering
+- **axios** ^1.15.0 – HTTP client
+- **react-hook-form** ^7.72.1 – Form state management & validation
+- **tailwindcss** ^4.2.2 – Styling
+- **typescript** ^6.0.3 – Type safety
 - **eslint** – Linting
 
-### Planned Additions (Phase 2+)
+### Planned Additions (Phase 3+)
 
-- **react-hook-form** – Form state management & validation
 - **Optional future**: React Query (data caching), Zustand (complex state), Vitest (testing)
+- **Next.js Server Components**: migrate data-fetching to RSC once auth moves to cookies/sessions
 
 ---
 
@@ -145,15 +152,21 @@
 cd frontend
 
 # Development
-npm run dev              # Start Vite dev server (http://localhost:5173)
+pnpm dev               # Start Next.js dev server (http://localhost:5173)
 
 # Testing
-npm run lint            # Run ESLint
-npm run build           # Build for production (checks TypeScript)
+pnpm lint              # Run ESLint
+pnpm build             # Build for production (TypeScript check + Next.js build)
 
 # Verify all three work after changes
-npm run lint && npm run build && npm run dev
+pnpm lint && pnpm build && pnpm dev
 ```
+
+# From repo root (preferred)
+
+pnpm --filter frontend dev
+pnpm --filter frontend build
+pnpm --filter frontend lint
 
 ### Backend
 
@@ -229,26 +242,33 @@ cd frontend && npm run dev
 ```
 frontend/
 ├── src/
-│   ├── api.ts                  # Axios + interceptors
-│   ├── App.tsx                 # Root component, state management
-│   ├── main.tsx                # React DOM render entry
-│   ├── index.css               # Tailwind imports + custom utilities
+│   ├── app/                    # Next.js App Router pages
+│   │   ├── layout.tsx          # Root layout (imports globals.css, metadata)
+│   │   ├── page.tsx            # / → redirect to /dashboard
+│   │   ├── globals.css         # Tailwind imports + custom utilities
+│   │   ├── login/
+│   │   │   └── page.tsx        # Login/register page
+│   │   └── dashboard/
+│   │       └── page.tsx        # Main dashboard (state management)
+│   ├── lib/
+│   │   └── api.ts              # Axios + interceptors
+│   ├── types.ts                # Shared type definitions
+│   ├── css.d.ts                # CSS side-effect import declaration
 │   ├── components/
 │   │   ├── AuthForm.tsx        # Login/register form
 │   │   ├── CalculatorPanel.tsx # Packing calculator UI
 │   │   ├── ContainerDetail.tsx # Container items + summary
 │   │   ├── ContainersList.tsx  # Container list + creation form
 │   │   ├── ErrorBanner.tsx     # Error display
+│   │   ├── FormField.tsx       # Form input wrapper
 │   │   ├── Header.tsx          # User + logout button
-│   │   ├── ItemTypesManager.tsx# ItemType list + creation form
-│   │   └── ProjectsManager.tsx # (Unused – to be deleted in Phase 3)
-│   └── hooks/                  # (New, Phase 1+)
+│   │   └── ItemTypesManager.tsx# ItemType list + creation form
+│   └── hooks/
 │       └── useFetch.ts         # Generic data-fetching hook
-├── types.ts                    # (New, Phase 1) Shared type definitions
+├── next.config.ts              # Next.js config (API rewrites)
+├── postcss.config.cjs          # Tailwind v4 PostCSS plugin
 ├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── tailwind.config.cjs
+└── tsconfig.json
 ```
 
 ---
