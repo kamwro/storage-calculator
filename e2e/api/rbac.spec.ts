@@ -7,7 +7,7 @@ test.describe('RBAC & ownership', () => {
     const userA = randUser();
     expect((await register(request, userA)).ok()).toBeTruthy();
     const { token: tokenA } = await (await login(request, userA)).json();
-    const contRes = await request.post('/containers', {
+    const contRes = await request.post('api/containers', {
       headers: authHeader(tokenA),
       data: { name: 'Secret A', maxWeightKg: 50, maxVolumeM3: 0.5 },
     });
@@ -19,7 +19,7 @@ test.describe('RBAC & ownership', () => {
     expect((await register(request, userB)).ok()).toBeTruthy();
     const { token: tokenB } = await (await login(request, userB)).json();
 
-    const getRes = await request.get(`/containers/${container.id}`, { headers: authHeader(tokenB) });
+    const getRes = await request.get(`api/containers/${container.id}`, { headers: authHeader(tokenB) });
     expect(getRes.status()).toBe(403);
     const body = await getRes.json();
     expect(typeof body.message).toBe('string');
