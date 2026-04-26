@@ -84,17 +84,11 @@ jobs:
           output-format: sarif
       - name: Verify SARIF exists
         run: |
-          if [ ! -s results.sarif ]; then
-            # Grype might name it differently by default, let's check
-            if [ -f scan-results.sarif ]; then
-              mv scan-results.sarif results.sarif
-            else
-              echo "No SARIF file found (tried results.sarif and scan-results.sarif)"
-              ls -R .
-              exit 1
-            fi
+          if [ ! -s "${{ steps.grype-scan.outputs.sarif }}" ]; then
+            echo "No SARIF file found at ${{ steps.grype-scan.outputs.sarif }}"
+            exit 1
           fi
       - name: Upload SARIF to code scanning
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: results.sarif
+          sarif_file: ${{ steps.grype-scan.outputs.sarif }}
