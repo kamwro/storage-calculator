@@ -312,3 +312,17 @@ Grype results: uploaded to GitHub Code Scanning as SARIF.
 - Replacing TypeORM with another ORM
 - Adding `'use server'` directives or Server Components without first migrating auth from localStorage to cookies/sessions
 - Adding a global state library to the frontend (discuss with owner first)
+
+---
+
+## Workflow Recipes
+
+Step-by-step guides for common tasks live in `.claude/commands/`. They are plain markdown — any agent can read and follow them. Claude Code users can also invoke them as slash commands.
+
+| File | Slash command | What it does |
+|------|--------------|--------------|
+| `.claude/commands/check.md` | `/check` | format → lint → build (full quality gate) |
+| `.claude/commands/seed.md` | `/seed` | reseed the dev database with demo data |
+| `.claude/commands/db-init.md` | `/db-init` | run migrations then seed (correct order enforced) |
+| `.claude/commands/e2e.md` | `/e2e` | start isolated SQLite backend, run Playwright API specs |
+| `.claude/commands/add-strategy.md` | `/add-strategy <key>` | add a new bin-packing strategy end-to-end (5 files) |
