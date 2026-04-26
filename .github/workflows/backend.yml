@@ -92,15 +92,14 @@ jobs:
         with:
           name: backend-sbom
           path: sbom-backend.spdx.json
-      - name: Scan with Grype
+      - name: Scan SBOM with Grype
         id: grype-scan
-        uses: anchore/scan-action@v4
+        uses: anchore/scan-action@v7
         with:
-          path: ./backend
+          sbom: sbom-backend.spdx.json
           fail-build: false
           output-format: sarif
           output-file: results.sarif
-          # For Node projects, scanning the directory   (lockfile) gives useful results
       - name: Verify SARIF exists
         run: |
           if [ ! -s "./results.sarif" ]; then

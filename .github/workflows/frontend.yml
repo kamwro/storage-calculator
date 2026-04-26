@@ -75,11 +75,11 @@ jobs:
         with:
           name: frontend-sbom
           path: sbom-frontend.spdx.json
-      - name: Scan with Grype
+      - name: Scan SBOM with Grype
         id: grype-scan
-        uses: anchore/scan-action@v4
+        uses: anchore/scan-action@v7
         with:
-          path: ./frontend
+          sbom: sbom-frontend.spdx.json
           fail-build: false
           output-format: sarif
           output-file: results.sarif
