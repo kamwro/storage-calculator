@@ -99,14 +99,15 @@ jobs:
           path: ./backend
           fail-build: false
           output-format: sarif
+          output-file: results.sarif
           # For Node projects, scanning the directory   (lockfile) gives useful results
       - name: Verify SARIF exists
         run: |
-          if [ ! -s "${{ steps.grype-scan.outputs.sarif }}" ]; then
-            echo "No SARIF file found at ${{ steps.grype-scan.outputs.sarif }}"
+          if [ ! -s "./results.sarif" ]; then
+            echo "No SARIF file found at ./results.sarif"
             exit 1
           fi
       - name: Upload SARIF to code scanning
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: ${{ steps.grype-scan.outputs.sarif }}
+          sarif_file: ./results.sarif
