@@ -19,7 +19,8 @@ const CalculatorPanel = ({ itemTypes, containers }: Props) => {
   const [result, setResult] = useState<CalculatorResult | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
-  const canRun = items.length > 0 && selectedContainers.length > 0;
+  const canRun =
+    items.length > 0 && selectedContainers.length > 0 && items.every((i) => i.itemTypeId !== '' && i.quantity > 0);
 
   const addRow = () => setItems((arr) => [...arr, { itemTypeId: '', quantity: 1 }]);
   const removeRow = (idx: number) => setItems((arr) => arr.filter((_, i) => i !== idx));
@@ -33,7 +34,9 @@ const CalculatorPanel = ({ itemTypes, containers }: Props) => {
     setResult(null);
     try {
       const payload: CalculatorRequest = {
-        items: items.map((i) => ({ itemTypeId: i.itemTypeId, quantity: Number(i.quantity) })),
+        items: items
+          .filter((i) => i.itemTypeId !== '' && i.quantity > 0)
+          .map((i) => ({ itemTypeId: i.itemTypeId, quantity: Number(i.quantity) })),
         containers: selectedContainers,
         strategy,
       };
@@ -156,24 +159,43 @@ const CalculatorPanel = ({ itemTypes, containers }: Props) => {
         <div className="space-y-2">
           <h3 className="font-semibold">Result {result.feasible ? '— Feasible' : '— Partially allocated'}</h3>
           <div className="space-y-3">
-            {result.byContainer.map((bc) => (
-              <div key={bc.containerId} className="border rounded p-2 text-sm">
-                <div>
-                  Total Weight: {bc.totalWeightKg.toFixed(3)} kg; Total Volume: {bc.totalVolumeM3.toFixed(3)} m³
-                </div>
-                <div>
-                  Utilization — W: {(bc.utilization.weightPct * 100).toFixed(1)}%, V:{' '}
-                  {(bc.utilization.volumePct * 100).toFixed(1)}%
-                </div>
-                <div className="mt-1">
-                  Items: {bc.items.map((it) => `${it.itemTypeId.slice(0, 8)}…×${it.quantity}`).join(', ') || '—'}
-                </div>
-              </div>
-            ))}
+            {result.byContainer
+              .filter((bc) => bc.items.length > 0)
+              .map((bc) => {
+                const container = containers.find((c) => c.id === bc.containerId);
+                return (
+                  <div key={bc.containerId} className="border rounded p-2 text-sm">
+                    <div className="font-medium mb-1">{container?.name ?? bc.containerId.slice(0, 8) + '…'}</div>
+                    <div>
+                      Total Weight: {bc.totalWeightKg.toFixed(3)} kg; Total Volume: {bc.totalVolumeM3.toFixed(3)} m³
+                    </div>
+                    <div>
+                      Utilization — W: {(bc.utilization.weightPct * 100).toFixed(1)}%, V:{' '}
+                      {(bc.utilization.volumePct * 100).toFixed(1)}%
+                    </div>
+                    <div className="mt-1">
+                      Items:{' '}
+                      {bc.items
+                        .map((it) => {
+                          const name =
+                            itemTypes.find((t) => t.id === it.itemTypeId)?.name ?? it.itemTypeId.slice(0, 8) + '…';
+                          return `${name} ×${it.quantity}`;
+                        })
+                        .join(', ')}
+                    </div>
+                  </div>
+                );
+              })}
           </div>
           {result.unallocated?.length ? (
             <div className="text-sm text-gray-700">
-              Unallocated: {result.unallocated.map((u) => `${u.itemTypeId.slice(0, 8)}…×${u.quantity}`).join(', ')}
+              Unallocated:{' '}
+              {result.unallocated
+                .map((u) => {
+                  const name = itemTypes.find((t) => t.id === u.itemTypeId)?.name ?? u.itemTypeId.slice(0, 8) + '…';
+                  return `${name} ×${u.quantity}`;
+                })
+                .join(', ')}
             </div>
           ) : (
             <div className="text-sm text-green-700">All items allocated.</div>

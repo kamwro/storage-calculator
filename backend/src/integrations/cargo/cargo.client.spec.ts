@@ -64,7 +64,7 @@ describe('CargoClient', () => {
     (global as any).fetch = mockFetch;
 
     const client = new CargoClient();
-    await expect(client.normalize('src', {})).rejects.toThrow(/Cargo request failed: 500/);
+    await expect(client.normalize('src', {})).rejects.toThrow(/External normalization service returned an error/);
   });
 
   test('normalize throws on GraphQL errors', async () => {
@@ -79,7 +79,7 @@ describe('CargoClient', () => {
     (global as any).fetch = mockFetch;
 
     const client = new CargoClient();
-    await expect(client.normalize('src', {})).rejects.toThrow(/bad/);
+    await expect(client.normalize('src', {})).rejects.toThrow(/External normalization service returned an error/);
   });
 
   test('health returns null on failure and object on success', async () => {

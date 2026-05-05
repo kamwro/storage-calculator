@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -8,27 +9,27 @@ import ContainerDetail from '@/components/ContainerDetail';
 import ContainersList from '@/components/ContainersList';
 import Header from '@/components/Header';
 import ItemTypesManager from '@/components/ItemTypesManager';
-import { useFetch } from '@/hooks/useFetch';
 import api, { setToken } from '@/lib/api';
 import type { Container, ItemType, User } from '@/types';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [selectedContainerId, setSelectedContainerId] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
-  const {
-    data: containers,
-    loading: containersLoading,
-    refetch: refetchContainers,
-  } = useFetch<Container[]>('/containers', { skip: !ready });
+  const { data: containers = [], isLoading: containersLoading } = useQuery<Container[]>({
+    queryKey: ['containers'],
+    queryFn: () => api.get('/containers').then((r) => r.data?.data ?? r.data),
+    enabled: ready,
+  });
 
-  const {
-    data: itemTypes,
-    loading: itemTypesLoading,
-    refetch: refetchItemTypes,
-  } = useFetch<ItemType[]>('/item-types', { skip: !ready });
+  const { data: itemTypes = [], isLoading: itemTypesLoading } = useQuery<ItemType[]>({
+    queryKey: ['item-types'],
+    queryFn: () => api.get('/item-types').then((r) => r.data?.data ?? r.data),
+    enabled: ready,
+  });
 
   useEffect(() => {
     const t = localStorage.getItem('token');
@@ -46,6 +47,7 @@ export default function DashboardPage() {
       .catch(() => {
         setToken(null);
         localStorage.removeItem('token');
+        queryClient.clear();
         router.replace('/login');
       });
   }, [router]);
@@ -65,6 +67,7 @@ export default function DashboardPage() {
         onLogout={() => {
           setToken(null);
           localStorage.removeItem('token');
+          queryClient.clear();
           router.replace('/login');
         }}
       />
@@ -75,11 +78,7 @@ export default function DashboardPage() {
           {itemTypesLoading ? (
             <p className="text-sm text-gray-500">Loading…</p>
           ) : (
-            <ItemTypesManager
-              itemTypes={itemTypes ?? []}
-              canCreate={user?.role === 'admin'}
-              onCreated={refetchItemTypes}
-            />
+            <ItemTypesManager itemTypes={itemTypes} canCreate={user?.role === 'admin'} />
           )}
         </div>
         <div className="border rounded p-4">
@@ -88,9 +87,11 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-500">Loading…</p>
           ) : (
             <ContainersList
-              containers={containers ?? []}
+              containers={containers}
               onSelect={(id) => setSelectedContainerId(id)}
-              onCreated={refetchContainers}
+              onDelete={(id) => {
+                if (selectedContainerId === id) setSelectedContainerId(null);
+              }}
             />
           )}
         </div>
@@ -100,14 +101,14 @@ export default function DashboardPage() {
         <div className="border rounded p-4">
           <h2 className="text-lg font-semibold mb-3">Container Detail</h2>
           {selectedContainerId ? (
-            <ContainerDetail id={selectedContainerId} itemTypes={itemTypes ?? []} onChanged={refetchContainers} />
+            <ContainerDetail id={selectedContainerId} itemTypes={itemTypes} />
           ) : (
             <p className="text-sm text-gray-600">Select a container to view details.</p>
           )}
         </div>
         <div className="border rounded p-4">
           <h2 className="text-lg font-semibold mb-3">Calculator</h2>
-          <CalculatorPanel itemTypes={itemTypes ?? []} containers={containers ?? []} />
+          <CalculatorPanel itemTypes={itemTypes} containers={containers} />
         </div>
       </section>
     </div>

@@ -62,4 +62,22 @@ describe('ContainersService (ownership scoping)', () => {
     const created = await service.create({ name: 'C3', maxWeightKg: 50, maxVolumeM3: 0.5 }, user as any);
     expect(created.ownerId).toBe('u3');
   });
+
+  it('remove deletes own container for user', async () => {
+    const user = { id: 'u1', username: 'u', role: 'user' } as const;
+    await service.remove('c1', user as any);
+    expect(containersRepo._data.find((c) => c.id === 'c1')).toBeUndefined();
+  });
+
+  it("remove forbids deleting another user's container", async () => {
+    const user = { id: 'u1', username: 'u', role: 'user' } as const;
+    await expect(service.remove('c2', user as any)).rejects.toBeInstanceOf(ForbiddenException);
+    expect(containersRepo._data.find((c) => c.id === 'c2')).toBeDefined();
+  });
+
+  it('remove allows admin to delete any container', async () => {
+    const admin = { id: 'admin', username: 'a', role: 'admin' } as const;
+    await service.remove('c2', admin as any);
+    expect(containersRepo._data.find((c) => c.id === 'c2')).toBeUndefined();
+  });
 });

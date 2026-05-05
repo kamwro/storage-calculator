@@ -1,22 +1,14 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
-/**
- * Payload to register a new user account.
- */
 export class RegisterDto {
-  /**
-   * Unique username used for login.
-   * - must be a non-empty string
-   */
+  @ApiProperty({ description: 'Unique username used for login', example: 'demo@example.com' })
   @IsString()
   @IsNotEmpty()
   username: string;
 
-  /**
-   * Plain-text password to be hashed server-side.
-   * - minimum length: 4 characters (demo only)
-   */
+  @ApiProperty({ description: 'Plain-text password (minimum 8 characters)', example: 'demo1234' })
   @IsString()
-  @MinLength(4)
+  @MinLength(8)
   password: string;
 }
