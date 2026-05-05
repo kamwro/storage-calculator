@@ -1,28 +1,19 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsNumber, Min, IsOptional } from 'class-validator';
 
-/**
- * Payload to update container properties.
- * All fields are optional; only provided values will be changed.
- */
 export class UpdateContainerDto {
-  /**
-   * New human-readable container name.
-   */
+  @ApiPropertyOptional({ description: 'New container name', example: 'Container A (updated)' })
   @IsOptional()
   @IsString()
   name?: string;
 
-  /**
-   * New maximum weight capacity in kilograms (non-negative).
-   */
+  @ApiPropertyOptional({ description: 'New maximum weight capacity in kilograms', example: 250 })
   @IsOptional()
   @IsNumber()
   @Min(0)
   maxWeightKg?: number;
 
-  /**
-   * New maximum volume capacity in cubic meters (non-negative).
-   */
+  @ApiPropertyOptional({ description: 'New maximum volume capacity in cubic metres', example: 3.0 })
   @IsOptional()
   @IsNumber()
   @Min(0)

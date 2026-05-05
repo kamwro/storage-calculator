@@ -1,28 +1,19 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsUUID, IsNumber, Min, IsOptional, IsString } from 'class-validator';
 
-/**
- * Payload to update an existing item.
- * All fields are optional; only provided values are applied.
- */
 export class UpdateItemDto {
-  /**
-   * New item type id to associate with the item.
-   */
+  @ApiPropertyOptional({ description: 'New item type ID', example: '3fa85f64-5717-4562-b3fc-2c963f66afa6' })
   @IsOptional()
   @IsUUID()
   itemTypeId?: string;
 
-  /**
-   * New quantity (non-negative) for the item.
-   */
+  @ApiPropertyOptional({ description: 'New quantity', example: 15 })
   @IsOptional()
   @IsNumber()
   @Min(0)
   quantity?: number;
 
-  /**
-   * Optional note update.
-   */
+  @ApiPropertyOptional({ description: 'Updated note', example: 'Checked — quantity confirmed' })
   @IsOptional()
   @IsString()
   note?: string;

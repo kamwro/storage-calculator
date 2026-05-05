@@ -1,25 +1,17 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsUUID, IsNumber, Min, IsOptional, IsString } from 'class-validator';
 
-/**
- * Payload to create an item inside a container.
- */
 export class CreateItemDto {
-  /**
-   * ID of the item type to associate with the item.
-   */
+  @ApiProperty({ description: 'ID of the item type to store', example: '3fa85f64-5717-4562-b3fc-2c963f66afa6' })
   @IsUUID()
   itemTypeId: string;
 
-  /**
-   * Number of units to store (non-negative).
-   */
+  @ApiProperty({ description: 'Number of units to store', example: 10 })
   @IsNumber()
   @Min(0)
   quantity: number;
 
-  /**
-   * Optional free-form note about the item.
-   */
+  @ApiPropertyOptional({ description: 'Optional free-form note', example: 'Fragile — handle with care' })
   @IsOptional()
   @IsString()
   note?: string;
