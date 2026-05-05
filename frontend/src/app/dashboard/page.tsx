@@ -83,7 +83,13 @@ export default function DashboardPage() {
           {containersLoading ? (
             <p className="text-sm text-gray-500">Loading…</p>
           ) : (
-            <ContainersList containers={containers} onSelect={(id) => setSelectedContainerId(id)} />
+            <ContainersList
+              containers={containers}
+              onSelect={(id) => setSelectedContainerId(id)}
+              onDelete={(id) => {
+                if (selectedContainerId === id) setSelectedContainerId(null);
+              }}
+            />
           )}
         </div>
       </section>

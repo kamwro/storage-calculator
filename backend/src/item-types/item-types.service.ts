@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateItemTypeDto } from './dto/create-item-type.dto';
@@ -49,5 +49,21 @@ export class ItemTypesService implements IItemTypesService {
     const item = await this.repo.findOne({ where: { id } });
     if (!item) throw new NotFoundException('Item type not found');
     return item;
+  }
+
+  /**
+   * Delete an item type by id.
+   * @throws NotFoundException when the item type does not exist
+   * @throws ConflictException when items still reference this type (FK constraint)
+   */
+  async remove(id: string): Promise<void> {
+    await this.findById(id);
+    try {
+      await this.repo.delete(id);
+    } catch {
+      // findById already confirmed the entity exists and DB is reachable,
+      // so the only reason delete can fail is a FK constraint from referencing items.
+      throw new ConflictException('Item type is referenced by existing items and cannot be deleted');
+    }
   }
 }

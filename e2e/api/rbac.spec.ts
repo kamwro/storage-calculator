@@ -23,5 +23,8 @@ test.describe('RBAC & ownership', () => {
     expect(getRes.status()).toBe(403);
     const body = await getRes.json();
     expect(typeof body.message).toBe('string');
+
+    // Cleanup
+    await request.delete(`api/containers/${container.id}`, { headers: authHeader(tokenA) });
   });
 });

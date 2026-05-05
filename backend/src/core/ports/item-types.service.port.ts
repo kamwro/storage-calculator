@@ -18,4 +18,8 @@ export interface IItemTypesService {
    * Retrieve a single item type by its id.
    */
   findById(id: string): Promise<ItemTypeEntity>;
+  /**
+   * Delete an item type by id; throws if referenced by existing items.
+   */
+  remove(id: string): Promise<void>;
 }

@@ -13,9 +13,10 @@ import FormField from './FormField';
 type Props = {
   containers: Container[];
   onSelect: (id: string) => void;
+  onDelete?: (id: string) => void;
 };
 
-const ContainersList = ({ containers, onSelect }: Props) => {
+const ContainersList = ({ containers, onSelect, onDelete }: Props) => {
   const queryClient = useQueryClient();
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -25,6 +26,17 @@ const ContainersList = ({ containers, onSelect }: Props) => {
     formState: { errors },
     reset,
   } = useForm<CreateContainerPayload>();
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/containers/${id}`),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['containers'] });
+      onDelete?.(id);
+    },
+    onError: (e: unknown) => {
+      setServerError(e instanceof Error ? e.message : 'Error deleting container');
+    },
+  });
 
   const createMutation = useMutation({
     mutationFn: (data: CreateContainerPayload) => api.post('/containers', data),
@@ -49,6 +61,17 @@ const ContainersList = ({ containers, onSelect }: Props) => {
                 {' '}
                 — W:{c.maxWeightKg}kg · V:{c.maxVolumeM3}m³
               </span>
+            </button>
+            <button
+              onClick={() => {
+                if (window.confirm(`Delete container "${c.name}"? This will also remove all its items.`)) {
+                  deleteMutation.mutate(c.id);
+                }
+              }}
+              disabled={deleteMutation.isPending}
+              className="ml-2 px-2 py-0.5 rounded text-xs bg-red-100 text-red-700 hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Delete
             </button>
           </li>
         ))}

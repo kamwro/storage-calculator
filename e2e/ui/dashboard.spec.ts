@@ -54,3 +54,43 @@ test('unauthenticated visit to /dashboard redirects to /login', async ({ page })
   // Client-side redirect fires after hydration; allow up to 10 s
   await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
 });
+
+test('user can create a container and delete it', async ({ page, request }) => {
+  const creds = randUser();
+  const reg = await registerViaApi(request, creds);
+  expect(reg.ok()).toBeTruthy();
+
+  // Log in
+  await page.goto('/login');
+  await page.getByPlaceholder('Username').fill(creds.username);
+  await page.getByPlaceholder('Password').fill(creds.password);
+  await page.getByRole('button', { name: 'Login' }).click();
+  await expect(page).toHaveURL(/\/dashboard/);
+
+  const containerName = `E2E-Delete-${Date.now()}`;
+
+  // Scope to the Containers panel (FormField renders label without `for`, so getByLabel won't work)
+  const containersPanel = page.locator('.border').filter({
+    has: page.getByRole('heading', { name: 'Containers', exact: true }),
+  });
+
+  // Fill and submit the create container form
+  await containersPanel.getByPlaceholder('Container A').fill(containerName);
+  await containersPanel.locator('input[type="number"]').first().fill('50');
+  await containersPanel.locator('input[type="number"]').last().fill('0.5');
+  await containersPanel.getByRole('button', { name: 'Create' }).click();
+
+  // Container should appear in the list
+  await expect(containersPanel.getByText(containerName)).toBeVisible({ timeout: 5_000 });
+
+  // Click Delete and confirm
+  page.once('dialog', (dialog) => dialog.accept());
+  await containersPanel
+    .getByRole('listitem')
+    .filter({ hasText: containerName })
+    .getByRole('button', { name: 'Delete', exact: true })
+    .click();
+
+  // Container should disappear
+  await expect(containersPanel.getByText(containerName)).not.toBeVisible({ timeout: 5_000 });
+});
