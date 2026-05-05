@@ -60,8 +60,12 @@ describe('CargoClient', () => {
     process.env.CARGO_URL = 'http://cargo';
     process.env.CARGO_API_KEY = 'k';
 
-    const mockFetch = jest.fn().mockResolvedValue({ ok: false, status: 500, statusText: 'ERR', text: async () => 'boom' });
-    (global as any).fetch = mockFetch;
+    (global as any).fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: 'ERR',
+      text: async () => 'boom',
+    });
 
     const client = new CargoClient();
     await expect(client.normalize('src', {})).rejects.toThrow(/External normalization service returned an error/);
@@ -71,12 +75,11 @@ describe('CargoClient', () => {
     process.env.CARGO_URL = 'http://cargo';
     process.env.CARGO_API_KEY = 'k';
 
-    const mockFetch = jest.fn().mockResolvedValue({
+    (global as any).fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ errors: [{ message: 'bad' }] }),
     });
-    (global as any).fetch = mockFetch;
 
     const client = new CargoClient();
     await expect(client.normalize('src', {})).rejects.toThrow(/External normalization service returned an error/);
@@ -86,11 +89,10 @@ describe('CargoClient', () => {
     process.env.CARGO_URL = 'http://cargo';
     process.env.CARGO_API_KEY = 'k';
 
-    const mockFetch = jest
+    (global as any).fetch = jest
       .fn()
       .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ ok: true }) })
       .mockResolvedValueOnce({ ok: false, status: 500, statusText: 'ERR', text: async () => '' });
-    (global as any).fetch = mockFetch;
 
     const client = new CargoClient();
     await expect(client.health()).resolves.toEqual({ ok: true });
