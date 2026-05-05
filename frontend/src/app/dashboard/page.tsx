@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -14,6 +14,7 @@ import type { Container, ItemType, User } from '@/types';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [selectedContainerId, setSelectedContainerId] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -46,6 +47,7 @@ export default function DashboardPage() {
       .catch(() => {
         setToken(null);
         localStorage.removeItem('token');
+        queryClient.clear();
         router.replace('/login');
       });
   }, [router]);
@@ -65,6 +67,7 @@ export default function DashboardPage() {
         onLogout={() => {
           setToken(null);
           localStorage.removeItem('token');
+          queryClient.clear();
           router.replace('/login');
         }}
       />
