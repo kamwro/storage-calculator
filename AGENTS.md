@@ -20,10 +20,10 @@ CRUD APIs, Playwright E2E tests, and per-service SBOM + vulnerability scanning i
 ```
 storage-calculator/
 ├── backend/                  # NestJS REST API (port 3000)
-├── frontend/                 # React 19 + Vite (port 5173)
+├── frontend/                 # React 19 + Next.js (port 5173)
 ├── e2e/
 │   ├── api/                  # Playwright API specs (auth, CRUD, RBAC, calculator)
-│   └── ui/                   # UI spec scaffold (no tests yet)
+│   └── ui/                   # Playwright browser UI tests
 ├── scripts/                  # Seed helpers (seed.sh, seed.py)
 ├── ADR/                      # Architecture Decision Records
 ├── .github/workflows/        # CI: backend.yml, frontend.yml, e2e.yml
@@ -92,8 +92,7 @@ frontend/
     │   └── api.ts                  # Axios instance; Bearer interceptor; error normalization
     ├── types.ts                    # Shared domain types (ItemType, Container, Item, User, …)
     ├── css.d.ts                    # declare module '*.css' shim for TypeScript
-    ├── hooks/useFetch.ts           # Generic data-fetching hook: { data, loading, error, refetch }
-    └── components/
+    ├── components/
         ├── AuthForm.tsx            # Login/register with react-hook-form
         ├── ContainersList.tsx      # List + create container
         ├── ContainerDetail.tsx     # Container items + summary panel
@@ -280,7 +279,7 @@ Grype results: uploaded to GitHub Code Scanning as SARIF.
 - **TypeScript strict mode** — no `any`, no untyped params
 - **No inline `style={{}}` in React** — Tailwind utility classes only (exception: dynamic numeric values like progress bar widths)
 - **No direct `new` for NestJS services** — always use DI
-- **Remote state in frontend** — use `useFetch` hook, not ad-hoc `useEffect` fetches
+- **Remote state in frontend** — use TanStack Query (`useQuery`/`useMutation`), not ad-hoc `useEffect` fetches
 - **Errors in backend** — throw `HttpException` subclasses (`BadRequestException`, `ForbiddenException`, etc.)
 
 ---

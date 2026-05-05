@@ -64,36 +64,6 @@
 
 ---
 
-## Frontend Refactoring Roadmap
-
-### Phase 1: Foundation (Type Safety + Fetch Layer)
-
-**Goal**: Eliminate type duplication, consolidate fetch patterns  
-**Duration**: ~2 hours  
-**Risk**: Low – purely organizational, no behavioral changes
-
-**Deliverables**:
-
-1. `frontend/src/types.ts` – Shared type definitions
-2. `frontend/src/hooks/useFetch.ts` – Generic data-fetching hook
-3. Refactored `App.tsx` – Use `useFetch` for data loads
-4. Updated components – Import from shared types
-
-**Files affected**: 9 files modified/created
-
-### Phase 2: Form Management + UX (Future – not yet implemented)
-
-**Goal**: Reduce form boilerplate, add loading/error feedback  
-**Tools**: react-hook-form, custom form components  
-**Deliverables**: Form components, loading spinners, enhanced error handling
-
-### Phase 3: Code Cleanup (Future – not yet implemented)
-
-**Goal**: Remove dead code, extract large components  
-**Deliverables**: Delete ProjectsManager, extract ItemsTable, DraftItemsList
-
----
-
 ## Coding Standards
 
 ### TypeScript
@@ -119,7 +89,7 @@
 ### State Management
 
 - **Local state**: `useState` for UI-only state (form inputs, modals)
-- **Remote state**: Use `useFetch` hook for server data
+- **Remote state**: Use TanStack Query (`useQuery`/`useMutation`) for server data
 - **Shared state**: Pass via props or Context API (no Redux yet)
 
 ---
@@ -139,62 +109,28 @@
 
 ### Planned Additions (Phase 3+)
 
-- **Optional future**: React Query (data caching), Zustand (complex state), Vitest (testing)
+- **Optional future**: Zustand (complex state), Vitest (testing)
 - **Next.js Server Components**: migrate data-fetching to RSC once auth moves to cookies/sessions
 
 ---
 
 ## Build & Development Commands
 
-### Frontend
+### Workspace Commands (Run from repo root)
 
 ```bash
-cd frontend
-
 # Development
-pnpm dev               # Start Next.js dev server (http://localhost:5173)
+pnpm --filter backend dev       # NestJS dev with hot-reload (http://localhost:3000)
+pnpm --filter frontend dev      # Start Next.js dev server (http://localhost:5173)
 
-# Testing
-pnpm lint              # Run ESLint
-pnpm build             # Build for production (TypeScript check + Next.js build)
+# Testing & Building
+pnpm run lint:all               # Run ESLint on all packages
+pnpm run build:all              # Build backend and frontend
+pnpm --filter backend test      # Run backend unit tests
+pnpm run e2e:all                # Run E2E tests
 
-# Verify all three work after changes
-pnpm lint && pnpm build && pnpm dev
-```
-
-# From repo root (preferred)
-
-pnpm --filter frontend dev
-pnpm --filter frontend build
-pnpm --filter frontend lint
-
-### Backend
-
-```bash
-cd backend
-
-# Development
-npm run start:dev       # NestJS dev with hot-reload (http://localhost:3000)
-
-# Testing
-npm run lint            # Run ESLint
-npm run build           # Compile TypeScript
-
-# Verify all three work after changes
-npm run lint && npm run build && npm run start:dev
-```
-
-### Full Stack
-
-```bash
-# Terminal 1: Backend
-cd backend && npm run start:dev
-
-# Terminal 2: Frontend
-cd frontend && npm run dev
-
-# Access frontend at http://localhost:5173
-# Backend API at http://localhost:3000
+# Verify locally before pushing
+pnpm run lint:all && pnpm run build:all
 ```
 
 ---
@@ -222,11 +158,9 @@ cd frontend && npm run dev
 - GraphQL can be added later as a parallel service
 - No N+1 query problems at current data volume
 
-### Why no form library initially?
+### Form Library
 
-- App has only 3 simple forms (login, create container, create item-type)
-- Would add bundle overhead for minimal benefit
-- Phase 2 introduces react-hook-form when form complexity grows
+- We use `react-hook-form` to reduce form boilerplate and manage validations, particularly in `AuthForm`, `ContainersList`, and `ItemTypesManager`.
 
 ### Why TailwindCSS (not CSS-in-JS)?
 
@@ -263,49 +197,11 @@ frontend/
 │   │   ├── FormField.tsx       # Form input wrapper
 │   │   ├── Header.tsx          # User + logout button
 │   │   └── ItemTypesManager.tsx# ItemType list + creation form
-│   └── hooks/
-│       └── useFetch.ts         # Generic data-fetching hook
 ├── next.config.ts              # Next.js config (API rewrites)
 ├── postcss.config.cjs          # Tailwind v4 PostCSS plugin
 ├── package.json
 └── tsconfig.json
 ```
-
----
-
-## Verification Checklist
-
-### Phase 1 Verification
-
-After implementing Phase 1:
-
-**Backend** (should be unchanged):
-
-- ✓ `cd backend && npm run lint`
-- ✓ `cd backend && npm run build`
-- ✓ `cd backend && npm run start:dev` starts without errors
-
-**Frontend** (after changes):
-
-- ✓ `cd frontend && npm run lint` – No ESLint errors
-- ✓ `cd frontend && npm run build` – Vite builds successfully, no TS errors
-- ✓ `cd frontend && npm run dev` – Dev server starts
-- ✓ Browser: Page loads, login works, data displays identically to before
-- ✓ Browser DevTools: No console errors, API calls work
-- ✓ Spot-check: Open any component, verify it imports from `src/types.ts`
-
----
-
-## Current Implementation Status
-
-- [x] Phase 1: Foundation
-  - [x] Create `types.ts`
-  - [x] Create `hooks/useFetch.ts`
-  - [x] Refactor `App.tsx`
-  - [x] Update components to use shared types
-  - [x] Verify build + lint + dev
-- [x] Phase 2: Form Management + UX
-- [ ] Phase 3: Code Cleanup
 
 ---
 
