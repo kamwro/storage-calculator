@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -11,30 +12,31 @@ import FormField from './FormField';
 
 type Props = {
   itemTypes: ItemType[];
-  onCreated?: () => void;
   canCreate?: boolean;
 };
 
-const ItemTypesManager = ({ itemTypes, onCreated, canCreate }: Props) => {
+const ItemTypesManager = ({ itemTypes, canCreate }: Props) => {
+  const queryClient = useQueryClient();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
   } = useForm<CreateItemTypePayload>();
 
-  const onSubmit = async (data: CreateItemTypePayload) => {
-    setServerError(null);
-    try {
-      await api.post('/item-types', data);
+  const createMutation = useMutation({
+    mutationFn: (data: CreateItemTypePayload) => api.post('/item-types', data),
+    onSuccess: () => {
       reset();
-      onCreated?.();
-    } catch (e: unknown) {
+      setServerError(null);
+      queryClient.invalidateQueries({ queryKey: ['item-types'] });
+    },
+    onError: (e: unknown) => {
       setServerError(e instanceof Error ? e.message : 'Error creating item type');
-    }
-  };
+    },
+  });
 
   return (
     <div className="space-y-3">
@@ -52,7 +54,7 @@ const ItemTypesManager = ({ itemTypes, onCreated, canCreate }: Props) => {
 
       {canCreate && (
         <>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-wrap gap-2 items-end">
+          <form onSubmit={handleSubmit((d) => createMutation.mutate(d))} className="flex flex-wrap gap-2 items-end">
             <FormField label="Name" error={errors.name?.message}>
               <input
                 className="border rounded px-2 py-1"
@@ -88,10 +90,10 @@ const ItemTypesManager = ({ itemTypes, onCreated, canCreate }: Props) => {
             </FormField>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={createMutation.isPending}
               className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Adding…' : 'Add (admin)'}
+              {createMutation.isPending ? 'Adding…' : 'Add (admin)'}
             </button>
           </form>
           <ErrorBanner message={serverError} />

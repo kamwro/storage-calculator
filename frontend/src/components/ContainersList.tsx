@@ -1,5 +1,6 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -12,29 +13,30 @@ import FormField from './FormField';
 type Props = {
   containers: Container[];
   onSelect: (id: string) => void;
-  onCreated?: () => void;
 };
 
-const ContainersList = ({ containers, onSelect, onCreated }: Props) => {
+const ContainersList = ({ containers, onSelect }: Props) => {
+  const queryClient = useQueryClient();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
   } = useForm<CreateContainerPayload>();
 
-  const onSubmit = async (data: CreateContainerPayload) => {
-    setServerError(null);
-    try {
-      await api.post('/containers', data);
+  const createMutation = useMutation({
+    mutationFn: (data: CreateContainerPayload) => api.post('/containers', data),
+    onSuccess: () => {
       reset();
-      onCreated?.();
-    } catch (e: unknown) {
+      setServerError(null);
+      queryClient.invalidateQueries({ queryKey: ['containers'] });
+    },
+    onError: (e: unknown) => {
       setServerError(e instanceof Error ? e.message : 'Error creating container');
-    }
-  };
+    },
+  });
 
   return (
     <div className="space-y-3">
@@ -53,7 +55,7 @@ const ContainersList = ({ containers, onSelect, onCreated }: Props) => {
         {containers.length === 0 && <li className="py-2 text-sm text-gray-500">No containers yet.</li>}
       </ul>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-wrap gap-2 items-end">
+      <form onSubmit={handleSubmit((d) => createMutation.mutate(d))} className="flex flex-wrap gap-2 items-end">
         <FormField label="Name" error={errors.name?.message}>
           <input
             className="border rounded px-2 py-1"
@@ -87,10 +89,10 @@ const ContainersList = ({ containers, onSelect, onCreated }: Props) => {
         </FormField>
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={createMutation.isPending}
           className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? 'Creating…' : 'Create'}
+          {createMutation.isPending ? 'Creating…' : 'Create'}
         </button>
       </form>
       <ErrorBanner message={serverError} />
