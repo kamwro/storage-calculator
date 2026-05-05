@@ -343,32 +343,27 @@ Environment overrides:
 
 ## Docker
 
-### Local development (database only)
+`docker-compose.yml` at the repo root defines both services. Use it for all Docker workflows.
 
-`docker-compose.yml` at the repo root starts only Postgres. The backend and frontend run natively with `pnpm dev`.
+### Local development — database only
+
+Start just Postgres while the backend and frontend run natively with `pnpm dev`:
 
 ```bash
-# From repo root
 docker compose up -d db
 docker compose down
 ```
 
-### Full Dockerized deployment (api + db)
+### Full Dockerized deployment — api + db
 
-`backend/docker-compose.yml` builds and starts the NestJS API container alongside Postgres.
+Build and start the NestJS API container alongside Postgres. Requires `backend/.env` to exist.
 
 ```bash
-cd backend
 docker compose up --build
 ```
 
-Compose-provided backend defaults:
-
-- `DB_HOST=db`
-- `DB_PORT=5432`
-- `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE` (from `.env`)
-
-The Postgres service uses the named volume `postgres-data`.
+The `api` service reads `./backend/.env` and overrides `DB_HOST=db` so it connects to the
+Compose-managed database. The Postgres service uses the named volume `postgres-data`.
 
 ## External Cargo Service
 
