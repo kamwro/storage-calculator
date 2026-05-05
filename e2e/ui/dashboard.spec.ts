@@ -39,10 +39,10 @@ test('registered user can log in and reach the dashboard', async ({ page, reques
 
   // Should land on dashboard showing all four main panels
   await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByRole('heading', { name: 'Item Types' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Containers' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Container Detail' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Calculator' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Item Types', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Containers', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Container Detail', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Calculator', exact: true })).toBeVisible();
 });
 
 test('unauthenticated visit to /dashboard redirects to /login', async ({ page }) => {
