@@ -1,51 +1,48 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsUUID, IsIn, ValidateNested, IsNumber, Min, ArrayMaxSize } from 'class-validator';
 import { Type } from 'class-transformer';
 
-/**
- * Single demand line specifying an item type and quantity to allocate.
- */
 export class EvaluateItemDto {
-  /**
-   * ID of the item type being requested.
-   */
+  @ApiProperty({ description: 'ID of the item type to allocate', example: '3fa85f64-5717-4562-b3fc-2c963f66afa6' })
   @IsUUID()
   itemTypeId: string;
 
-  /**
-   * Requested units of the item type (non-negative, fractional values are rounded down internally).
-   */
+  @ApiProperty({ description: 'Number of units to allocate', example: 10 })
   @IsNumber()
   @Min(0)
   quantity: number;
 }
 
-/**
- * Request payload to evaluate an allocation strategy over a set of containers.
- */
 export class EvaluateRequestDto {
-  /**
-   * List of demand lines to be allocated by the chosen strategy.
-   * Limited to 100 entries to keep evaluation bounded.
-   */
+  @ApiProperty({
+    description: 'Demand lines to allocate (max 100)',
+    type: [EvaluateItemDto],
+    example: [
+      { itemTypeId: '3fa85f64-5717-4562-b3fc-2c963f66afa6', quantity: 10 },
+      { itemTypeId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', quantity: 5 },
+    ],
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => EvaluateItemDto)
   @ArrayMaxSize(100)
   items: EvaluateItemDto[];
 
-  /**
-   * Candidate containers (by id) to consider during evaluation.
-   * Limited to 100 entries to keep evaluation bounded.
-   */
+  @ApiProperty({
+    description: 'Candidate container IDs to consider (max 100)',
+    type: [String],
+    example: ['b2c3d4e5-f6a7-8901-bcde-f01234567891', 'c3d4e5f6-a7b8-9012-cdef-012345678912'],
+  })
   @IsArray()
   @ArrayMaxSize(100)
   @IsUUID('all', { each: true })
   containers: string[];
 
-  /**
-   * Allocation strategy key to use: `first_fit`, `best_fit`, `best_fit_decreasing` (or `bfd`),
-   * or `single_container_only`.
-   */
+  @ApiProperty({
+    description: 'Allocation strategy to apply',
+    enum: ['first_fit', 'best_fit', 'best_fit_decreasing', 'bfd', 'single_container_only'],
+    example: 'best_fit_decreasing',
+  })
   @IsIn(['first_fit', 'best_fit', 'best_fit_decreasing', 'bfd', 'single_container_only'])
   strategy: 'first_fit' | 'best_fit' | 'best_fit_decreasing' | 'bfd' | 'single_container_only';
 }

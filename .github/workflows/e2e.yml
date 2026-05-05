@@ -38,7 +38,8 @@ jobs:
           DB_FILE=:memory:
           TYPEORM_SYNC=true
           TYPEORM_DROP_SCHEMA=true
-          JWT_SECRET=dev-secret
+          JWT_SECRET=dev-secret-for-ci-e2e-only-not-used-in-prod
+          THROTTLE_LIMIT=1000
           EOF
 
       - name: Build services

@@ -1,49 +1,35 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, Min, IsString, IsOptional, IsNotEmpty } from 'class-validator';
 
-/**
- * Payload to create a new item type used by items and calculations.
- */
 export class CreateItemTypeDto {
-  /**
-   * Human-readable unique name for the item type.
-   */
+  @ApiProperty({ description: 'Unique human-readable name', example: 'Small Box' })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  /**
-   * Weight of a single unit in kilograms (non-negative).
-   */
+  @ApiProperty({ description: 'Weight of one unit in kilograms', example: 1 })
   @IsNumber()
   @Min(0)
   unitWeightKg: number;
 
-  /**
-   * Volume of a single unit in cubic meters (non-negative).
-   */
+  @ApiProperty({ description: 'Volume of one unit in cubic metres', example: 0.02 })
   @IsNumber()
   @Min(0)
   unitVolumeM3: number;
 
-  /**
-   * Optional length of a single unit in meters (non-negative).
-   */
+  @ApiPropertyOptional({ description: 'Length of one unit in metres', example: 0.4 })
   @IsOptional()
   @IsNumber()
   @Min(0)
   lengthM?: number;
 
-  /**
-   * Optional width of a single unit in meters (non-negative).
-   */
+  @ApiPropertyOptional({ description: 'Width of one unit in metres', example: 0.3 })
   @IsOptional()
   @IsNumber()
   @Min(0)
   widthM?: number;
 
-  /**
-   * Optional height of a single unit in meters (non-negative).
-   */
+  @ApiPropertyOptional({ description: 'Height of one unit in metres', example: 0.2 })
   @IsOptional()
   @IsNumber()
   @Min(0)

@@ -13,7 +13,8 @@ import { AUTH_SERVICE } from '../core/tokens';
     PassportModule,
     JwtModule.registerAsync({
       useFactory: () => ({
-        secret: process.env.JWT_SECRET || 'super-secret-key-change-me',
+        // JWT_SECRET is validated at startup in main.ts; absence is a fatal error.
+        secret: process.env.JWT_SECRET!,
         signOptions: { expiresIn: (process.env.JWT_EXPIRES_IN || '7d') as any },
       }),
     }),

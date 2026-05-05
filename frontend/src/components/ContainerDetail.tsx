@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 
 import api from '@/lib/api';
 import type { ContainerSummary, CreateItemPayload, Item, ItemType } from '@/types';
@@ -19,18 +20,24 @@ const SummaryRow = ({ label, value, unit }: { label: string; value: number; unit
   </div>
 );
 
-export default function ContainerDetail({
-  id,
-  itemTypes,
-  onChanged,
-}: {
-  id: string;
-  itemTypes: ItemType[];
-  onChanged?: () => void;
-}) {
-  const [items, setItems] = useState<Item[]>([]);
-  const [summary, setSummary] = useState<ContainerSummary | null>(null);
+export default function ContainerDetail({ id, itemTypes }: { id: string; itemTypes: ItemType[] }) {
+  const queryClient = useQueryClient();
   const [serverError, setServerError] = useState<string | null>(null);
+
+  const { data: items = [] } = useQuery<Item[]>({
+    queryKey: ['container-items', id],
+    queryFn: () => api.get(`/containers/${id}/items`).then((r) => r.data?.data ?? r.data),
+  });
+
+  const { data: summary } = useQuery<ContainerSummary>({
+    queryKey: ['container-summary', id],
+    queryFn: () => api.get(`/containers/${id}/summary`).then((r) => r.data),
+  });
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['container-items', id] });
+    queryClient.invalidateQueries({ queryKey: ['container-summary', id] });
+  };
 
   const {
     register,
@@ -39,46 +46,33 @@ export default function ContainerDetail({
     reset,
   } = useForm<CreateItemPayload>({ defaultValues: { quantity: 1 } });
 
-  const load = async () => {
-    const [itemsRes, sumRes] = await Promise.all([
-      api.get(`/containers/${id}/items`),
-      api.get(`/containers/${id}/summary`),
-    ]);
-    setItems(itemsRes.data?.data ?? itemsRes.data);
-    setSummary(sumRes.data);
-  };
-
-  useEffect(() => {
-    load();
-  }, [id]);
-
-  const onAddItem = async (data: CreateItemPayload) => {
-    setServerError(null);
-    try {
-      await api.post(`/containers/${id}/items`, {
+  const addItemMutation = useMutation({
+    mutationFn: (data: CreateItemPayload) =>
+      api.post(`/containers/${id}/items`, {
         itemTypeId: data.itemTypeId,
         quantity: Number(data.quantity),
         note: data.note || undefined,
-      });
+      }),
+    onSuccess: () => {
       reset({ quantity: 1 });
-      await load();
-      onChanged?.();
-    } catch (e: unknown) {
+      setServerError(null);
+      invalidate();
+    },
+    onError: (e: unknown) => {
       setServerError(e instanceof Error ? e.message : 'Failed to add item');
-    }
-  };
+    },
+  });
 
-  const updateQty = async (itemId: string, quantity: number) => {
-    await api.patch(`/items/${itemId}`, { quantity: Number(quantity) });
-    await load();
-    onChanged?.();
-  };
+  const updateQtyMutation = useMutation({
+    mutationFn: ({ itemId, quantity }: { itemId: string; quantity: number }) =>
+      api.patch(`/items/${itemId}`, { quantity: Number(quantity) }),
+    onSuccess: invalidate,
+  });
 
-  const remove = async (itemId: string) => {
-    await api.delete(`/items/${itemId}`);
-    await load();
-    onChanged?.();
-  };
+  const removeMutation = useMutation({
+    mutationFn: (itemId: string) => api.delete(`/items/${itemId}`),
+    onSuccess: invalidate,
+  });
 
   return (
     <div className="space-y-4">
@@ -103,15 +97,15 @@ export default function ContainerDetail({
                   <input
                     className="border rounded px-1 py-0.5 w-20 text-right"
                     type="number"
-                    value={it.quantity}
-                    onChange={(e) => updateQty(it.id, Number(e.target.value))}
+                    defaultValue={it.quantity}
+                    onBlur={(e) => updateQtyMutation.mutate({ itemId: it.id, quantity: Number(e.target.value) })}
                   />
                 </td>
                 <td className="p-2 text-right">{it.itemType.unitWeightKg}</td>
                 <td className="p-2 text-right">{it.itemType.unitVolumeM3}</td>
                 <td className="p-2 text-xs text-gray-600">{it.note ?? ''}</td>
                 <td className="p-2 text-right">
-                  <button className="text-red-600 hover:underline" onClick={() => remove(it.id)}>
+                  <button className="text-red-600 hover:underline" onClick={() => removeMutation.mutate(it.id)}>
                     Delete
                   </button>
                 </td>
@@ -128,7 +122,7 @@ export default function ContainerDetail({
         </table>
       </div>
 
-      <form onSubmit={handleSubmit(onAddItem)} className="flex flex-wrap gap-2 items-end">
+      <form onSubmit={handleSubmit((d) => addItemMutation.mutate(d))} className="flex flex-wrap gap-2 items-end">
         <FormField label="Item Type" error={errors.itemTypeId?.message}>
           <select
             className="border rounded px-2 py-1 min-w-40"
@@ -158,10 +152,10 @@ export default function ContainerDetail({
         </FormField>
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || addItemMutation.isPending}
           className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? 'Adding…' : 'Add Item'}
+          {addItemMutation.isPending ? 'Adding…' : 'Add Item'}
         </button>
       </form>
       <ErrorBanner message={serverError} />

@@ -71,5 +71,54 @@ test.describe('Containers & Items API', () => {
     // Delete item
     const del = await request.delete(`api/items/${item.id}`, { headers: authHeader(token) });
     expect(del.ok()).toBeTruthy();
+
+    // Cleanup: delete the container (cascades any remaining items)
+    await request.delete(`api/containers/${container.id}`, { headers: authHeader(token) });
+  });
+});
+
+test.describe('Container delete authorization', () => {
+  test('user can delete their own container', async ({ request }) => {
+    const user = randUser();
+    expect((await register(request, user)).ok()).toBeTruthy();
+    const { token } = await (await login(request, user)).json();
+
+    const created = await (
+      await request.post('api/containers', {
+        data: { name: `ToDelete ${Date.now()}`, maxWeightKg: 10, maxVolumeM3: 0.1 },
+        headers: authHeader(token),
+      })
+    ).json();
+
+    const del = await request.delete(`api/containers/${created.id}`, { headers: authHeader(token) });
+    expect(del.ok()).toBeTruthy();
+
+    // Verify it no longer appears in the list
+    const list = await request.get('api/containers', { headers: authHeader(token) });
+    const body = await list.json();
+    const items = Array.isArray(body) ? body : body.data;
+    expect(items.find((c: any) => c.id === created.id)).toBeUndefined();
+  });
+
+  test("user cannot delete another user's container (403)", async ({ request }) => {
+    const owner = randUser();
+    const other = randUser();
+    expect((await register(request, owner)).ok()).toBeTruthy();
+    expect((await register(request, other)).ok()).toBeTruthy();
+    const { token: ownerToken } = await (await login(request, owner)).json();
+    const { token: otherToken } = await (await login(request, other)).json();
+
+    const created = await (
+      await request.post('api/containers', {
+        data: { name: `OtherCont ${Date.now()}`, maxWeightKg: 10, maxVolumeM3: 0.1 },
+        headers: authHeader(ownerToken),
+      })
+    ).json();
+
+    const del = await request.delete(`api/containers/${created.id}`, { headers: authHeader(otherToken) });
+    expect(del.status()).toBe(403);
+
+    // Cleanup: owner deletes the container
+    await request.delete(`api/containers/${created.id}`, { headers: authHeader(ownerToken) });
   });
 });

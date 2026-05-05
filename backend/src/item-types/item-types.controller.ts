@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, HttpCode, HttpStatus, UseGuards, Query } from '@nestjs/common';
 import { ItemTypesService } from './item-types.service';
 import { CreateItemTypeDto } from './dto/create-item-type.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { PaginationQueryDto } from '../shared/dto/pagination.dto';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 /**
  * ItemTypesController
@@ -35,5 +35,19 @@ export class ItemTypesController {
   @ApiBody({ type: CreateItemTypeDto })
   create(@Body() dto: CreateItemTypeDto) {
     return this.itemTypesService.create(dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete an item type (admin only)' })
+  @ApiParam({ name: 'id', type: String })
+  @ApiResponse({ status: 204, description: 'Deleted' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 409, description: 'Item type in use by existing items' })
+  remove(@Param('id') id: string) {
+    return this.itemTypesService.remove(id);
   }
 }

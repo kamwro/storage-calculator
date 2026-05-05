@@ -59,7 +59,7 @@ const AuthForm = ({ onSuccess }: { onSuccess: () => void }) => {
             placeholder="Password"
             {...register('password', {
               required: 'Password is required',
-              minLength: { value: 4, message: 'Minimum 4 characters' },
+              minLength: { value: 8, message: 'Minimum 8 characters' },
             })}
           />
         </FormField>

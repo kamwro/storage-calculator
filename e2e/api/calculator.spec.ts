@@ -17,7 +17,11 @@ test.describe('Calculator API', () => {
     // Ensure at least one item type exists
     const adminToken = await tryAdminLogin(request);
     const type = await ensureItemType(request, adminToken);
-    test.skip(!type, 'No item type available');
+    if (!type) {
+      await request.delete(`api/containers/${container.id}`, { headers: authHeader(token) });
+      test.skip(true, 'No item type available');
+      return;
+    }
 
     // Evaluate
     const evalRes = await request.post('api/calculator/evaluate', {
@@ -33,6 +37,9 @@ test.describe('Calculator API', () => {
     expect(typeof body.feasible).toBe('boolean');
     expect(Array.isArray(body.byContainer)).toBeTruthy();
     expect(body.byContainer.find((b: any) => b.containerId === container.id)).toBeTruthy();
+
+    // Cleanup
+    await request.delete(`api/containers/${container.id}`, { headers: authHeader(token) });
   });
 
   test("non-admin cannot evaluate with another user's container (403)", async ({ request }) => {
@@ -49,7 +56,11 @@ test.describe('Calculator API', () => {
     // Ensure an item type exists
     const adminToken = await tryAdminLogin(request);
     const type = await ensureItemType(request, adminToken);
-    test.skip(!type, 'No item type available');
+    if (!type) {
+      await request.delete(`api/containers/${container.id}`, { headers: authHeader(tokenA) });
+      test.skip(true, 'No item type available');
+      return;
+    }
 
     // User B tries to evaluate with A's container
     const b = randUser();
@@ -66,5 +77,8 @@ test.describe('Calculator API', () => {
     expect(evalRes.status()).toBe(403);
     const body = await evalRes.json();
     expect(typeof body.message).toBe('string');
+
+    // Cleanup
+    await request.delete(`api/containers/${container.id}`, { headers: authHeader(tokenA) });
   });
 });

@@ -1,0 +1,11 @@
+node_modules
+.git
+.idea
+.vscode
+test-results
+e2e
+scripts
+backend/dist
+frontend/.next
+frontend/node_modules
+backend/node_modules

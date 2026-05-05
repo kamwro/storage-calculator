@@ -1,7 +1,7 @@
 services:
   api:
     build:
-      context: ..
+      context: .
       dockerfile: ./backend/Dockerfile
     ports:
       - "${PORT:-3000}:3000"
@@ -9,7 +9,7 @@ services:
       db:
         condition: service_healthy
     env_file:
-      - .env
+      - ./backend/.env
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -22,7 +22,7 @@ services:
       - storage-calculator
 
   db:
-    container_name: db
+    container_name: storage-calculator-db
     image: postgres:18.1-bookworm
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
