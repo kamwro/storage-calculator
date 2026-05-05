@@ -4,6 +4,8 @@ dist/
 build/
 tmp/
 *.tsbuildinfo
+backend/jest.config.js
+backend/jest.config.d.ts
 
 # Logs
 logs
