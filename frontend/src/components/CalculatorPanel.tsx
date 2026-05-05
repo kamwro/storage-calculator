@@ -19,7 +19,8 @@ const CalculatorPanel = ({ itemTypes, containers }: Props) => {
   const [result, setResult] = useState<CalculatorResult | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
-  const canRun = items.length > 0 && selectedContainers.length > 0;
+  const canRun =
+    items.length > 0 && selectedContainers.length > 0 && items.every((i) => i.itemTypeId !== '' && i.quantity > 0);
 
   const addRow = () => setItems((arr) => [...arr, { itemTypeId: '', quantity: 1 }]);
   const removeRow = (idx: number) => setItems((arr) => arr.filter((_, i) => i !== idx));
@@ -33,7 +34,9 @@ const CalculatorPanel = ({ itemTypes, containers }: Props) => {
     setResult(null);
     try {
       const payload: CalculatorRequest = {
-        items: items.map((i) => ({ itemTypeId: i.itemTypeId, quantity: Number(i.quantity) })),
+        items: items
+          .filter((i) => i.itemTypeId !== '' && i.quantity > 0)
+          .map((i) => ({ itemTypeId: i.itemTypeId, quantity: Number(i.quantity) })),
         containers: selectedContainers,
         strategy,
       };
