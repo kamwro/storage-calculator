@@ -1,8 +1,9 @@
-import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import type { ICargoClient, NormalizeResult } from '../../core/ports/cargo.client.port';
 
 @Injectable()
 export class CargoClient implements ICargoClient {
+  private readonly logger = new Logger(CargoClient.name);
   private readonly hasApiKey: boolean = !!process.env.CARGO_API_KEY;
 
   private buildHeaders(): Record<string, string> {
@@ -49,12 +50,13 @@ export class CargoClient implements ICargoClient {
     });
     if (res.status !== HttpStatus.OK) {
       const text = await res.text().catch(() => '');
-      throw new BadRequestException(`Cargo request failed: ${res.status} ${res.statusText} ${text}`.trim());
+      this.logger.error(`Cargo normalize failed: ${res.status} ${res.statusText} ${text}`.trim());
+      throw new BadRequestException('External normalization service returned an error');
     }
     const data = await res.json();
     if (data?.errors) {
-      const message = data.errors?.[0]?.message ?? 'Cargo error';
-      throw new BadRequestException(message);
+      this.logger.error(`Cargo normalize GraphQL error: ${data.errors?.[0]?.message ?? 'unknown'}`);
+      throw new BadRequestException('External normalization service returned an error');
     }
     return data?.data?.normalize as NormalizeResult;
   }

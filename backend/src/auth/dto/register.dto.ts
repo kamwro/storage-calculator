@@ -14,9 +14,9 @@ export class RegisterDto {
 
   /**
    * Plain-text password to be hashed server-side.
-   * - minimum length: 4 characters (demo only)
+   * - minimum length: 8 characters
    */
   @IsString()
-  @MinLength(4)
+  @MinLength(8)
   password: string;
 }

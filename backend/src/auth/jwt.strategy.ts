@@ -6,7 +6,8 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      secretOrKey: process.env.JWT_SECRET || 'super-secret-key-change-me',
+      // JWT_SECRET is validated at startup in main.ts; absence is a fatal error.
+      secretOrKey: process.env.JWT_SECRET!,
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     });
   }

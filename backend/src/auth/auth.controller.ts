@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -16,6 +17,7 @@ import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nes
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @UseGuards(ThrottlerGuard)
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
   @ApiBody({ type: RegisterDto })
@@ -24,6 +26,7 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
+  @UseGuards(ThrottlerGuard)
   @Post('login')
   @ApiOperation({ summary: 'Login with username and password' })
   @ApiBody({ type: LoginDto })
