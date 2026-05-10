@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Simple storage calculator backend",
   "engines": {
-    "node": "^24.11.1"
+    "node": ">=24.15.0 <25"
   },
   "scripts": {
     "start": "nest start",
@@ -25,7 +25,7 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.19",
-    "@nestjs/swagger": "^11.4.1",
+    "@nestjs/swagger": "^11.4.2",
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^11.0.1",
     "bcryptjs": "^3.0.3",
@@ -39,7 +39,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "swagger-ui-express": "^5.0.1",
-    "typeorm": "^0.3.28"
+    "typeorm": "^0.3.29"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.21",
@@ -48,16 +48,16 @@
     "@types/bcryptjs": "^3.0.0",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.6.2",
     "@types/passport-jwt": "^4.0.1",
-    "@typescript-eslint/eslint-plugin": "^8.59.0",
-    "@typescript-eslint/parser": "^8.59.0",
-    "eslint": "^10.2.1",
+    "@typescript-eslint/eslint-plugin": "^8.59.2",
+    "@typescript-eslint/parser": "^8.59.2",
+    "eslint": "^10.3.0",
     "eslint-plugin-simple-import-sort": "^13.0.0",
     "eslint-plugin-unused-imports": "^4.4.1",
-    "globals": "^17.5.0",
-    "jest": "^30.3.0",
-    "npm-check-updates": "^21.0.3",
+    "globals": "^17.6.0",
+    "jest": "^30.4.2",
+    "npm-check-updates": "^22.1.1",
     "prettier": "^3.8.3",
     "ts-jest": "^29.4.9",
     "ts-loader": "^9.5.7",

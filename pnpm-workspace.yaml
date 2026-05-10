@@ -1,3 +1,6 @@
+useNodeVersion: 24.15.0
+managePackageManagerVersions: true
+
 packages:
   - backend
   - frontend
@@ -7,3 +10,9 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
   - unrs-resolver
+
+allowBuilds:
+  '@nestjs/core': true
+  '@scarf/scarf': true
+  sharp: true
+  unrs-resolver: true
