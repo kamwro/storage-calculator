@@ -12,6 +12,7 @@ export type Container = {
   name: string;
   maxWeightKg: number;
   maxVolumeM3: number;
+  isFavorite: boolean;
 };
 
 export type Item = {
@@ -80,6 +81,7 @@ export type CreateContainerPayload = {
   name: string;
   maxWeightKg: number;
   maxVolumeM3: number;
+  isFavorite: boolean;
 };
 
 export type CreateItemTypePayload = {

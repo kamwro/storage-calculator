@@ -44,6 +44,7 @@ frontend/.next/
 frontend/out/
 frontend/.env.local
 frontend/.env*.local
+frontend/next-env.d.ts
 
 # IDE/editor
 .idea/

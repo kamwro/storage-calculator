@@ -14,6 +14,9 @@ export class ContainerEntity {
   @Column('float')
   maxVolumeM3: number;
 
+  @Column('boolean', { default: false })
+  isFavorite: boolean;
+
   // Owner scoping (RBAC)
   @Column('uuid')
   ownerId: string;
