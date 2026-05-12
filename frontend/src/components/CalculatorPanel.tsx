@@ -15,9 +15,9 @@ type DraftItem = { itemTypeId: string; quantity: number };
 const STRATEGY_INFO: Record<CalculatorRequest['strategy'], string> = {
   first_fit: 'Places each item in the first container that has enough capacity. Fast but may leave gaps.',
   best_fit: 'Picks the container with the least remaining capacity after placement, packing tightly.',
-  best_fit_decreasing:
-    'Like Best Fit, but sorts items largest-first before packing — usually yields better utilization.',
-  single_container_only: 'Tries to fit all items into a single container; leaves items unallocated if none can hold everything.',
+  best_fit_decreasing: 'Like Best Fit, but sorts items largest-first before packing — usually yields better utilization.',
+  single_container_only:
+    'Tries to fit all items into a single container; leaves items unallocated if none can hold everything.',
 };
 
 const CalculatorPanel = ({ itemTypes, containers }: Props) => {
