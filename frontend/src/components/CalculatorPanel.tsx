@@ -12,6 +12,14 @@ type Props = {
 
 type DraftItem = { itemTypeId: string; quantity: number };
 
+const STRATEGY_INFO: Record<CalculatorRequest['strategy'], string> = {
+  first_fit: 'Places each item in the first container that has enough capacity. Fast but may leave gaps.',
+  best_fit: 'Picks the container with the least remaining capacity after placement, packing tightly.',
+  best_fit_decreasing:
+    'Like Best Fit, but sorts items largest-first before packing — usually yields better utilization.',
+  single_container_only: 'Tries to fit all items into a single container; leaves items unallocated if none can hold everything.',
+};
+
 const CalculatorPanel = ({ itemTypes, containers }: Props) => {
   const [items, setItems] = useState<DraftItem[]>([]);
   const [strategy, setStrategy] = useState<CalculatorRequest['strategy']>('best_fit');
@@ -145,6 +153,15 @@ const CalculatorPanel = ({ itemTypes, containers }: Props) => {
           <option value="best_fit_decreasing">best_fit_decreasing</option>
           <option value="single_container_only">single_container_only</option>
         </select>
+        <div className="relative group">
+          <span className="flex items-center justify-center w-5 h-5 rounded-full border border-gray-400 text-gray-500 text-xs cursor-default select-none">
+            ?
+          </span>
+          <div className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 rounded bg-gray-800 px-3 py-2 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
+            {STRATEGY_INFO[strategy]}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
+          </div>
+        </div>
         <button
           disabled={!canRun}
           className={`px-3 py-1 rounded text-white ${canRun ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
