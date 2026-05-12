@@ -2,14 +2,21 @@ import { ForbiddenException } from '@nestjs/common';
 import { ContainersService } from './containers.service';
 import type { Repository } from 'typeorm';
 
-type Container = { id: string; name: string; maxWeightKg: number; maxVolumeM3: number; ownerId: string };
+type Container = {
+  id: string;
+  name: string;
+  maxWeightKg: number;
+  maxVolumeM3: number;
+  isFavorite: boolean;
+  ownerId: string;
+};
 
 describe('ContainersService (ownership scoping)', () => {
   let service: ContainersService;
   let containersRepo: Partial<Repository<Container>> & { _data: Container[] };
 
-  const c1: Container = { id: 'c1', name: 'A', maxWeightKg: 100, maxVolumeM3: 1, ownerId: 'u1' };
-  const c2: Container = { id: 'c2', name: 'B', maxWeightKg: 200, maxVolumeM3: 2, ownerId: 'u2' };
+  const c1: Container = { id: 'c1', name: 'A', maxWeightKg: 100, maxVolumeM3: 1, isFavorite: false, ownerId: 'u1' };
+  const c2: Container = { id: 'c2', name: 'B', maxWeightKg: 200, maxVolumeM3: 2, isFavorite: false, ownerId: 'u2' };
 
   beforeEach(() => {
     containersRepo = {
@@ -59,7 +66,10 @@ describe('ContainersService (ownership scoping)', () => {
 
   it('create sets ownerId to the current user', async () => {
     const user = { id: 'u3', username: 'u', role: 'user' } as const;
-    const created = await service.create({ name: 'C3', maxWeightKg: 50, maxVolumeM3: 0.5 }, user as any);
+    const created = await service.create(
+      { name: 'C3', maxWeightKg: 50, maxVolumeM3: 0.5, isFavorite: false },
+      user as any,
+    );
     expect(created.ownerId).toBe('u3');
   });
 
@@ -79,5 +89,23 @@ describe('ContainersService (ownership scoping)', () => {
     const admin = { id: 'admin', username: 'a', role: 'admin' } as const;
     await service.remove('c2', admin as any);
     expect(containersRepo._data.find((c) => c.id === 'c2')).toBeUndefined();
+  });
+
+  it('update toggles isFavorite on own container', async () => {
+    const user = { id: 'u1', username: 'u', role: 'user' } as const;
+    const updated = await service.update('c1', { isFavorite: true }, user as any);
+    expect(updated.isFavorite).toBe(true);
+    expect(containersRepo._data.find((c) => c.id === 'c1')?.isFavorite).toBe(true);
+  });
+
+  it("update forbids modifying another user's container", async () => {
+    const user = { id: 'u1', username: 'u', role: 'user' } as const;
+    await expect(service.update('c2', { isFavorite: true }, user as any)).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('update allows admin to toggle any container isFavorite', async () => {
+    const admin = { id: 'admin', username: 'a', role: 'admin' } as const;
+    const updated = await service.update('c2', { isFavorite: true }, admin as any);
+    expect(updated.isFavorite).toBe(true);
   });
 });

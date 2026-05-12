@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, Min, IsOptional } from 'class-validator';
+import { IsString, IsNumber, Min, IsOptional, IsBoolean } from 'class-validator';
 
 export class UpdateContainerDto {
   @ApiPropertyOptional({ description: 'New container name', example: 'Container A (updated)' })
@@ -18,4 +18,12 @@ export class UpdateContainerDto {
   @IsNumber()
   @Min(0)
   maxVolumeM3?: number;
+
+  @ApiPropertyOptional({
+    description: "Determines whether a container is a user's favorite",
+    example: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  isFavorite?: boolean;
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, Min, IsNotEmpty } from 'class-validator';
+import { IsString, IsNumber, Min, IsNotEmpty, IsBoolean } from 'class-validator';
 
 export class CreateContainerDto {
   @ApiProperty({ description: 'Human-readable container name', example: 'Container A' })
@@ -16,4 +16,8 @@ export class CreateContainerDto {
   @IsNumber()
   @Min(0)
   maxVolumeM3: number;
+
+  @ApiProperty({ description: "Determines whether a container is a user's favorite", example: false, default: false })
+  @IsBoolean()
+  isFavorite: boolean = false;
 }

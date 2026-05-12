@@ -55,6 +55,50 @@ test('unauthenticated visit to /dashboard redirects to /login', async ({ page })
   await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
 });
 
+test('user can favorite and unfavorite a container; state persists after reload', async ({ page, request }) => {
+  const creds = randUser();
+  expect((await registerViaApi(request, creds)).ok()).toBeTruthy();
+
+  await page.goto('/login');
+  await page.getByPlaceholder('Username').fill(creds.username);
+  await page.getByPlaceholder('Password').fill(creds.password);
+  await page.getByRole('button', { name: 'Login' }).click();
+  await expect(page).toHaveURL(/\/dashboard/);
+
+  const containerName = `E2E-Fav-${Date.now()}`;
+  const containersPanel = page.locator('.border').filter({
+    has: page.getByRole('heading', { name: 'Containers', exact: true }),
+  });
+
+  // Create a container
+  await containersPanel.getByPlaceholder('Container A').fill(containerName);
+  await containersPanel.locator('input[type="number"]').first().fill('10');
+  await containersPanel.locator('input[type="number"]').last().fill('0.1');
+  await containersPanel.getByRole('button', { name: 'Create' }).click();
+  await expect(containersPanel.getByText(containerName)).toBeVisible({ timeout: 5_000 });
+
+  const row = containersPanel.getByRole('listitem').filter({ hasText: containerName });
+
+  // Mark as favorite — no confirm dialog, direct click
+  await row.getByRole('button', { name: 'Favorite', exact: true }).click();
+  await expect(row.getByRole('button', { name: 'Unfavorite', exact: true })).toBeVisible({ timeout: 5_000 });
+
+  // Reload and verify persistence
+  await page.reload();
+  await expect(containersPanel.getByText(containerName)).toBeVisible({ timeout: 5_000 });
+  const reloadedRow = containersPanel.getByRole('listitem').filter({ hasText: containerName });
+  await expect(reloadedRow.getByRole('button', { name: 'Unfavorite', exact: true })).toBeVisible({ timeout: 5_000 });
+
+  // Unmark favorite
+  await reloadedRow.getByRole('button', { name: 'Unfavorite', exact: true }).click();
+  await expect(reloadedRow.getByRole('button', { name: 'Favorite', exact: true })).toBeVisible({ timeout: 5_000 });
+
+  // Cleanup
+  page.once('dialog', (dialog) => dialog.accept());
+  await reloadedRow.getByRole('button', { name: 'Delete', exact: true }).click();
+  await expect(containersPanel.getByText(containerName)).not.toBeVisible({ timeout: 5_000 });
+});
+
 test('user can create a container and delete it', async ({ page, request }) => {
   const creds = randUser();
   const reg = await registerViaApi(request, creds);

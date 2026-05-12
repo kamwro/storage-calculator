@@ -36,7 +36,7 @@ export class ContainersService implements IContainersService {
     if (!q) {
       return this.containersRepo.find({ where });
     }
-    const order = buildOrder<ContainerEntity>(['name', 'maxWeightKg', 'maxVolumeM3', 'id'], q.sort, q.dir);
+    const order = buildOrder<ContainerEntity>(['name', 'maxWeightKg', 'maxVolumeM3', 'isFavorite', 'id'], q.sort, q.dir);
     const [data, total] = await this.containersRepo.findAndCount({
       where,
       order,

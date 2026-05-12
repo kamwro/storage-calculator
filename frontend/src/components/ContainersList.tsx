@@ -50,11 +50,44 @@ const ContainersList = ({ containers, onSelect, onDelete }: Props) => {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, isFavorite }: { id: string; isFavorite: boolean }) =>
+      api.patch(`/containers/${id}`, { isFavorite }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['containers'] });
+    },
+    onError: (e: unknown) => {
+      setServerError(e instanceof Error ? e.message : 'Error updating container');
+    },
+  });
+
+  const sorted = [...containers].sort((a, b) => {
+    if (a.isFavorite !== b.isFavorite) return a.isFavorite ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+
   return (
     <div className="space-y-3">
       <ul className="divide-y">
-        {containers.map((c) => (
+        {sorted.map((c) => (
           <li key={c.id} className="py-2 flex items-center justify-between text-sm">
+            {!c.isFavorite ? (
+              <button
+                onClick={() => updateMutation.mutate({ id: c.id, isFavorite: true })}
+                disabled={updateMutation.isPending}
+                className="px-2 py-0.5 rounded text-xs bg-yellow-200 text-teal-950 hover:bg-yellow-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Favorite
+              </button>
+            ) : (
+              <button
+                onClick={() => updateMutation.mutate({ id: c.id, isFavorite: false })}
+                disabled={updateMutation.isPending}
+                className="px-2 py-0.5 rounded text-xs bg-green-500 text-teal-950 hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Unfavorite
+              </button>
+            )}
             <button className="text-left hover:underline" onClick={() => onSelect(c.id)} title="Select container">
               <span className="font-medium">{c.name}</span>
               <span className="text-gray-600">
@@ -79,6 +112,9 @@ const ContainersList = ({ containers, onSelect, onDelete }: Props) => {
       </ul>
 
       <form onSubmit={handleSubmit((d) => createMutation.mutate(d))} className="flex flex-wrap gap-2 items-end">
+        <FormField label="Mark as Favorite" error={errors.isFavorite?.message}>
+          <input className="border rounded px-2 py-1" type={'checkbox'} {...register('isFavorite', { required: false })} />
+        </FormField>
         <FormField label="Name" error={errors.name?.message}>
           <input
             className="border rounded px-2 py-1"
