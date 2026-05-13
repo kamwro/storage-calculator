@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 import CalculatorPanel from '@/components/CalculatorPanel';
 import ContainerDetail from '@/components/ContainerDetail';
@@ -71,6 +72,14 @@ export default function DashboardPage() {
           router.replace('/login');
         }}
       />
+
+      {user?.role === 'admin' && (
+        <div className="flex justify-end">
+          <Link href="/admin" className="px-4 py-1.5 rounded bg-blue-700 text-white text-sm font-medium hover:bg-blue-800">
+            Admin Panel →
+          </Link>
+        </div>
+      )}
 
       <section className="grid md:grid-cols-2 gap-6">
         <div className="border rounded p-4">

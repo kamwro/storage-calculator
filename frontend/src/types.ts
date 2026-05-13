@@ -23,7 +23,14 @@ export type Item = {
 };
 
 export type User = {
+  id: string;
   username: string;
+  role: 'admin' | 'user';
+};
+
+export type AdminUser = {
+  id: string;
+  name: string;
   role: 'admin' | 'user';
 };
 
