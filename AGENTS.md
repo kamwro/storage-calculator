@@ -87,7 +87,8 @@ frontend/
     │   ├── page.tsx                # / → redirect('/dashboard')
     │   ├── globals.css             # Tailwind @import + utility classes
     │   ├── login/page.tsx          # Login/register page; redirects to /dashboard on success
-    │   └── dashboard/page.tsx      # Main app page; checks localStorage token on mount
+    │   ├── dashboard/page.tsx      # Main app page; checks localStorage token on mount
+    │   └── admin/page.tsx          # Admin-only panel; redirects non-admin to /dashboard
     ├── lib/
     │   └── api.ts                  # Axios instance; Bearer interceptor; error normalization
     ├── types.ts                    # Shared domain types (ItemType, Container, Item, User, …)
@@ -98,6 +99,7 @@ frontend/
         ├── ContainerDetail.tsx     # Container items + summary panel
         ├── ItemTypesManager.tsx    # ItemType catalog (admin-only create)
         ├── CalculatorPanel.tsx     # Strategy selector + evaluation results
+        ├── UserList.tsx            # Admin panel: users list + per-user container inspect
         ├── Header.tsx              # User info + logout (calls onLogout prop)
         ├── ErrorBanner.tsx         # Error display
         └── FormField.tsx           # Input wrapper with inline error
@@ -244,17 +246,20 @@ The GitHub Actions `e2e.yml` workflow uses this exact approach and is triggered 
 
 | Resource   | Method           | Path                      | Auth        |
 | ---------- | ---------------- | ------------------------- | ----------- |
-| Auth       | POST             | `/auth/register`          | Public      |
-| Auth       | POST             | `/auth/login`             | Public      |
-| Auth       | GET              | `/auth/me`                | JWT         |
-| Item types | GET              | `/item-types`             | Public      |
-| Item types | POST             | `/item-types`             | Admin       |
-| Containers | GET/POST         | `/containers`             | JWT         |
-| Containers | GET/PATCH/DELETE | `/containers/:id`         | JWT + owner |
-| Containers | GET              | `/containers/:id/summary` | JWT + owner |
-| Items      | GET/POST         | `/containers/:id/items`   | JWT + owner |
-| Items      | PATCH/DELETE     | `/items/:id`              | JWT + owner |
-| Calculator | POST             | `/calculator/evaluate`    | JWT         |
+| Auth       | POST             | `/auth/register`              | Public      |
+| Auth       | POST             | `/auth/login`                 | Public      |
+| Auth       | GET              | `/auth/me`                    | JWT         |
+| Item types | GET              | `/item-types`                 | Public      |
+| Item types | POST             | `/item-types`                 | Admin       |
+| Containers | GET/POST         | `/containers`                 | JWT         |
+| Containers | GET/PATCH/DELETE | `/containers/:id`             | JWT + owner |
+| Containers | GET              | `/containers/:id/summary`     | JWT + owner |
+| Items      | GET/POST         | `/containers/:id/items`       | JWT + owner |
+| Items      | PATCH/DELETE     | `/items/:id`                  | JWT + owner |
+| Calculator | POST             | `/calculator/evaluate`        | JWT         |
+| Users      | GET              | `/users`                      | Admin       |
+| Users      | GET              | `/users/:id/containers`       | Admin       |
+| Users      | DELETE           | `/users/:id`                  | Admin       |
 
 Paginated list responses: `{ data: T[], total, offset, limit }`
 Error responses: `{ message: string, code: string }`
@@ -285,6 +290,10 @@ Grype results: uploaded to GitHub Code Scanning as SARIF.
 ---
 
 ## Safe Modification Rules
+
+**Always update docs when relevant:**
+
+After any change that adds/removes/renames routes, endpoints, components, or commands, update the relevant sections in `README.md`, `AGENTS.md`, `CLAUDE.md`, and `.claude/commands/` (skills) to keep them accurate. Stale docs mislead future agents. Edit them in the same PR as the code change.
 
 **Safe — additive, low blast radius:**
 

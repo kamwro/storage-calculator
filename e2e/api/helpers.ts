@@ -36,6 +36,10 @@ export async function tryAdminLogin(request: APIRequestContext): Promise<string 
   return null;
 }
 
+export async function deleteUser(request: APIRequestContext, adminToken: string, userId: string) {
+  return request.delete(`api/users/${userId}`, { headers: authHeader(adminToken) });
+}
+
 export async function ensureItemType(request: APIRequestContext, adminToken: string | null) {
   // Try to list existing item types first
   const list = await request.get('api/item-types');

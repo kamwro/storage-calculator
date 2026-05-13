@@ -88,6 +88,21 @@ export class ContainersService implements IContainersService {
   }
 
   /**
+   * List all containers owned by a specific user (admin use only).
+   */
+  async findByOwner(ownerId: string): Promise<ContainerEntity[]> {
+    return this.containersRepo.find({ where: { ownerId } });
+  }
+
+  /**
+   * Delete all containers owned by a specific user (admin use only).
+   * Items are removed via DB-level CASCADE on the container FK.
+   */
+  async removeByOwner(ownerId: string): Promise<void> {
+    await this.containersRepo.delete({ ownerId });
+  }
+
+  /**
    * Calculate utilization for a container based on its current items.
    */
   async calculate(id: string, user: AuthUser) {
