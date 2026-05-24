@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import type { IUsersService } from '../core/ports/users.service.port';
 import { UserEntity } from '../infra/postgres/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -27,6 +27,13 @@ export class UsersService implements IUsersService {
   }
 
   /**
+   * List all users without exposing password hashes.
+   */
+  async findAll(): Promise<UserEntity[]> {
+    return this.repo.find({ select: { id: true, name: true, role: true } });
+  }
+
+  /**
    * Find a user by id.
    */
   async findById(id: string): Promise<UserEntity | null> {
@@ -38,6 +45,17 @@ export class UsersService implements IUsersService {
    */
   async findByName(name: string): Promise<UserEntity | null> {
     return await this.repo.findOne({ where: { name } });
+  }
+
+  /**
+   * Delete a user by id. Throws if not found or if the requester tries to delete themselves.
+   * Caller must remove the user's containers first to avoid orphaned rows.
+   */
+  async remove(id: string, requesterId: string): Promise<void> {
+    const user = await this.repo.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    if (id === requesterId) throw new ForbiddenException('Cannot delete your own account');
+    await this.repo.delete(id);
   }
 
   /**

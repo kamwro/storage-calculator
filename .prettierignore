@@ -3,4 +3,9 @@ dist
 build
 .husky
 docs
-frontend/next-env.d.ts
+AGENTS.md
+CLAUDE.md
+.claude
+.github
+.junie
+test-results

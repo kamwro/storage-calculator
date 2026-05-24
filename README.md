@@ -73,7 +73,8 @@ Access points:
 2. **Containers and item types** — the seed creates two containers (Container A / Container B) and three item types (Small Box / Medium Box / Large Box) visible immediately on the dashboard
 3. **Run the calculator** — click "Add" in the Calculator panel, pick an item type and quantity, check one or both containers, select `best_fit_decreasing`, click Evaluate. Show the per-container breakdown and utilization percentages.
 4. **RBAC / admin-only creation** — log out, log in as `admin@example.com` / `admin1234`. The "Add (admin)" button appears in the Item Types panel. Creating a new item type as a regular user returns 403.
-5. **Swagger / API docs** — open `http://localhost:3000/api/docs` to show the full API surface with request/response schemas and bearer auth.
+5. **Admin panel** — while logged in as admin, click the **Admin Panel →** button on the dashboard. The `/admin` page lists every registered user. Click any row to select that user and see their details (username, role) and a table of their containers. Non-admin accounts are redirected back to `/dashboard`; direct API calls to `/api/users` or `/api/users/:id/containers` return 403.
+6. **Swagger / API docs** — open `http://localhost:3000/api/docs` to show the full API surface with request/response schemas and bearer auth.
 
 ### Test commands
 
@@ -133,7 +134,7 @@ pnpm run e2e:all
     - `src/shared/http/` — global error filter normalising all responses
 - `frontend/`
   - Next.js 15 (App Router) + React 19 + TailwindCSS 4
-  - Routes: `/` → `/dashboard` (redirect), `/login`, `/dashboard`
+  - Routes: `/` → `/dashboard` (redirect), `/login`, `/dashboard`, `/admin` (admin-only)
   - `src/lib/api.ts` — Axios instance with auth + error interceptors
   - `src/components/Providers.tsx` — TanStack Query `QueryClientProvider` wrapper
   - `src/types.ts` — shared domain types
@@ -220,6 +221,12 @@ Base URL: `/api`
 - `POST /containers/:containerId/items`
 - `PATCH /items/:id`
 - `DELETE /items/:id`
+
+### Users (admin only)
+
+- `GET /users` — list all users; response omits password hashes
+- `GET /users/:id/containers` — list containers owned by a specific user
+- `DELETE /users/:id` — delete a user and all their containers; returns 204; cannot delete yourself (403)
 
 ### Calculator
 

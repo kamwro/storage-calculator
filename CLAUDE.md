@@ -182,8 +182,10 @@ frontend/
 │   │   ├── globals.css         # Tailwind imports + custom utilities
 │   │   ├── login/
 │   │   │   └── page.tsx        # Login/register page
-│   │   └── dashboard/
-│   │       └── page.tsx        # Main dashboard (state management)
+│   │   ├── dashboard/
+│   │   │   └── page.tsx        # Main dashboard (state management)
+│   │   └── admin/
+│   │       └── page.tsx        # Admin panel (admin-only; redirects non-admin to /dashboard)
 │   ├── lib/
 │   │   └── api.ts              # Axios + interceptors
 │   ├── types.ts                # Shared type definitions
@@ -196,7 +198,8 @@ frontend/
 │   │   ├── ErrorBanner.tsx     # Error display
 │   │   ├── FormField.tsx       # Form input wrapper
 │   │   ├── Header.tsx          # User + logout button
-│   │   └── ItemTypesManager.tsx# ItemType list + creation form
+│   │   ├── ItemTypesManager.tsx# ItemType list + creation form
+│   │   └── UserList.tsx        # Admin panel: users table + per-user containers
 ├── next.config.ts              # Next.js config (API rewrites)
 ├── postcss.config.cjs          # Tailwind v4 PostCSS plugin
 ├── package.json
