@@ -334,3 +334,20 @@ Step-by-step guides for common tasks live in `.claude/commands/`. They are plain
 | `.claude/commands/db-init.md`      | `/db-init`            | run migrations then seed (correct order enforced)       |
 | `.claude/commands/e2e.md`          | `/e2e`                | start isolated SQLite backend, run Playwright API specs |
 | `.claude/commands/add-strategy.md` | `/add-strategy <key>` | add a new bin-packing strategy end-to-end (5 files)     |
+
+## Pull Request Descriptions
+
+- When asked to generate a pull request description, follow the structure in
+  `.github/pull_request_template.md`.
+- Always inspect both:
+  - staged changes with `git diff --cached --name-status` and
+    `git diff --cached --stat`,
+  - already committed branch changes with `git log origin/main..HEAD`,
+    `git diff --name-status origin/main..HEAD`, and
+    `git diff --stat origin/main..HEAD`.
+- Combine already committed branch changes and staged changes into one PR
+  description.
+- Clearly mention any relevant unstaged changes as not included in the PR
+  description unless the user asks to include them.
+- If `origin/main` is unavailable, compare against `main` and state that
+  fallback explicitly.
